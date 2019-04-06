@@ -1,5 +1,3 @@
-// https://play.rust-lang.org/?gist=ee3e4df093c136ced7b394dc7ffb78e1&version=stable&backtrace=0
-
 // jsonrpc call is triggered by peach-buttons
 //   -> press() listens for button_code & passes to state_changer thread
 //      via a channel
@@ -13,6 +11,9 @@
 
 #[macro_use]
 extern crate crossbeam_channel;
+#[macro_use]
+extern crate jsonrpc_client_core;
+extern crate jsonrpc_client_http;
 
 use std::thread;
 use failure::Fail;
@@ -21,27 +22,29 @@ use jsonrpc_http_server::jsonrpc_core::*;
 use jsonrpc_http_server::*;
 use serde::Deserialize;
 use crossbeam_channel::unbounded;
+use jsonrpc_client_http::HttpTransport;
 
-fn build_msg(x_coord: i32, y_coord: i32, string: String) -> Msg {
-    Msg {
-        x_coord,
-        y_coord,
-        string,
-    }
+fn oled_client(x_coord: i32, y_coord: i32, string: String) {
+    // create http transport for jsonrpc comms
+    let transport = HttpTransport::new().standalone().unwrap();
+    let transport_handle = transport.handle("http://127.0.0.1:3030").unwrap();
+    let mut client = PeachOledClient::new(transport_handle);
+
+    // send msg to oled for display
+    client.write(x_coord, y_coord, string).call().unwrap();
 }
 
 fn main() {
    
     // create an unbounded channel
     let (s, r) = unbounded();
-    let (s1, r1) = (s.clone(), r.clone());
+    let (_s1, r1) = (s.clone(), r.clone());
 
     // state_changer thread
     thread::spawn(move || {
         let mut state = State::Welcome;
         loop {
             let button_code = r1.recv().unwrap();
-            println!("{:}", button_code);
             // match on button_code & pass event to state.next
             let event = match button_code {
                 // button code mappings
@@ -55,9 +58,7 @@ fn main() {
                 _ => Event::Unknown,
             };
             state = state.next(event);
-            println!(" to {:?}", state);
             if let State::Failure(string) = state {
-                println!("{}", string);
                 break;
             } else {
                 state.run();
@@ -66,7 +67,7 @@ fn main() {
     });
 
     let mut io = IoHandler::default();
-    let (s2, r2) = (s.clone(), r.clone());
+    let (s2, _r2) = (s.clone(), r.clone());
 
     io.add_method("press", move |params: Params| {
         let p: Result<Press> = params.parse();
@@ -97,33 +98,11 @@ struct Press {
     button_code: u8,
 }
 
-#[derive(Debug)]
-struct Msg {
-    x_coord: i32,
-    y_coord: i32,
-    string: String,
-}
-
-#[derive(Debug, PartialEq)]
-enum State {
-    Welcome,
-    Help,
-    Clock,
-    Networking,
-    Failure(String),
-}
-
-#[derive(Debug, Clone, Copy)]
-enum Event {
-    Center,
-    Left,
-    Right,
-    Down,
-    Up,
-    A,
-    B,
-    Unknown,
-}
+// jsonrpc client
+jsonrpc_client!(pub struct PeachOledClient {
+    // send msg(s) to oled display for printing
+    pub fn write(&mut self, x_coord: i32, y_coord: i32, string: String) -> RpcRequest<String>;
+});
 
 // error handling for jsonrpc methods
 #[derive(Debug, Fail)]
@@ -149,6 +128,27 @@ impl From<PressError> for Error {
     }
 }
 
+#[derive(Debug, PartialEq)]
+enum State {
+    Welcome,
+    Help,
+    Clock,
+    Networking,
+    Failure(String),
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Event {
+    Center,
+    Left,
+    Right,
+    Down,
+    Up,
+    A,
+    B,
+    Unknown,
+}
+
 // state machine functionality
 impl State {
     fn next(self, event: Event) -> State {
@@ -171,7 +171,13 @@ impl State {
 
     fn run(&self) {
         match *self {
-            State::Welcome => println!("Welcome to PeachCloud!"),
+            State::Welcome => {
+                let x_coord = 0;
+                let y_coord = 0;
+                let string = "Welcome to PeachCloud".to_string();
+                // perform write() call to peach-oled
+                oled_client(x_coord, y_coord, string);
+            },
             State::Help => println!("Navigation"),
             State::Clock => println!("Clock"),
             State::Networking => println!("Network Stats"),

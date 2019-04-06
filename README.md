@@ -8,7 +8,7 @@ _Note: This module is a work-in-progress._
 
 | Method | Parameters | Description |
 | --- | --- | --- |
-| `press` | `button_code` | Compute next state based current state and button pressed |
+| `press` | `button_code` | Compute next state based on current state and button pressed |
 
 ### Button Code Mappings
 
