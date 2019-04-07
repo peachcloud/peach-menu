@@ -28,14 +28,14 @@ use std::thread;
 /// * `x_coord` - A 32 byte signed int.
 /// * `y_coord` - A 32 byte signed int.
 /// * `string` - A String containing the message to be displayed.
-pub fn oled_client(x_coord: i32, y_coord: i32, string: String) {
+pub fn oled_client(x_coord: i32, y_coord: i32, string: String, font_size: String) {
     // create http transport for json-rpc comms
     let transport = HttpTransport::new().standalone().unwrap();
     let transport_handle = transport.handle("http://127.0.0.1:3030").unwrap();
     let mut client = PeachOledClient::new(transport_handle);
 
     // send msg to oled for display
-    client.write(x_coord, y_coord, string).call().unwrap();
+    client.write(x_coord, y_coord, string, font_size).call().unwrap();
 }
 
 /// Initializes the state machine, listens for button events and drives
@@ -124,7 +124,7 @@ pub struct Press {
 // jsonrpc client
 jsonrpc_client!(pub struct PeachOledClient {
     /// Creates a JSON-RPC request to write to the OLED display.
-    pub fn write(&mut self, x_coord: i32, y_coord: i32, string: String) -> RpcRequest<String>;
+    pub fn write(&mut self, x_coord: i32, y_coord: i32, string: String, font_size: String) -> RpcRequest<String>;
 });
 
 // error handling for jsonrpc methods
@@ -202,8 +202,9 @@ impl State {
                 let x_coord = 0;
                 let y_coord = 0;
                 let string = "Welcome to PeachCloud".to_string();
+                let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string);
+                oled_client(x_coord, y_coord, string, font_size);
             }
             State::Help => println!("Navigation"),
             State::Clock => println!("Clock"),
