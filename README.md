@@ -1,14 +1,8 @@
 ## peach-menu
 
-OLED menu microservice module for PeachCloud. A state machine which listens for GPIO events (button presses) and makes [JSON-RPC](https://www.jsonrpc.org/specification) calls to relevant PeachCloud microservices (eg. peach-oled & peach-network).
+OLED menu microservice module for PeachCloud. A state machine which listens for GPIO events (button presses) by subscribing to `peach-buttons` over websockets and makes [JSON-RPC](https://www.jsonrpc.org/specification) calls to relevant PeachCloud microservices (eg. peach-oled & peach-network).
 
 _Note: This module is a work-in-progress._
-
-### JSON-RPC API
-
-| Method | Parameters | Description |
-| --- | --- | --- |
-| `press` | `button_code` | Compute next state based on current state and button pressed |
 
 ### Button Code Mappings
 
@@ -47,27 +41,7 @@ Run the binary:
 
 `./target/debug/peach-menu`
 
-### Example Usage
-
-**Send button code to menu**
-
-With microservice running, open a second terminal window and use `curl` to call server method:
-
-`curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "press", "params" : {"button_code": 0}, "id":1}' 127.0.0.1:3031`
-
-Server responds with:
-
-`{"jsonrpc":"2.0","result":"success","id":1}`
-
-First terminal output:
-
-```
-0  
- to Welcome  
-Welcome to PeachCloud!
-```
-
-Output includes: 1) button_code, 2) event, 3) new state output
+_Note: Will currently panic if `peach_buttons` is not running (connection to ws server fails)._
 
 ### Resources
 

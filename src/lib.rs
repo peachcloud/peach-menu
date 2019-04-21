@@ -1,39 +1,48 @@
 //! # peach-menu
 //!
 //! `peach_menu` is a collection of utilities and data structures for running
-//! a menu state machine. I/O takes place using JSON-RPC 2.0 over http
-//! transports, with `peach-buttons` providing GPIO input data and `peach-oled`
-//! receiving output data for display.
+//! a menu state machine. I/O takes place using JSON-RPC 2.0 over websockets, 
+//! with `peach-buttons` providing GPIO input data and `peach-oled` receiving 
+//! output data for display.
 
 extern crate crossbeam_channel;
 #[macro_use]
 extern crate jsonrpc_client_core;
 extern crate jsonrpc_client_http;
+extern crate ws;
+extern crate regex;
 
-use crossbeam_channel::unbounded;
-use crossbeam_channel::Receiver;
-use failure::Fail;
-use jsonrpc_client_http::HttpTransport;
-use jsonrpc_http_server::jsonrpc_core::types::error::Error;
-use jsonrpc_http_server::jsonrpc_core::*;
-use jsonrpc_http_server::*;
-use serde::Deserialize;
 use std::thread;
 
+use crossbeam_channel::unbounded;
+use crossbeam_channel::*;
+
+use jsonrpc_client_http::HttpTransport;
+use jsonrpc_http_server::jsonrpc_core::*;
+
+use ws::{connect, Handler, Sender, Result, Message, Handshake, CloseCode, Error};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use regex::Regex;
+
 /// Creates a JSON-RPC client with http transport and calls the `peach-oled`
-/// `write` method.
+/// `clear` and `write` methods.
 ///
 /// # Arguments
 ///
 /// * `x_coord` - A 32 byte signed int.
 /// * `y_coord` - A 32 byte signed int.
 /// * `string` - A String containing the message to be displayed.
+/// * `font_size` - A String containing `6x8`, `6x12`, `8x16` or `12x16`
+///
 pub fn oled_client(x_coord: i32, y_coord: i32, string: String, font_size: String) {
     // create http transport for json-rpc comms
     let transport = HttpTransport::new().standalone().unwrap();
-    let transport_handle = transport.handle("http://127.0.0.1:3030").unwrap();
+    let transport_handle = transport.handle("http://127.0.0.1:3031").unwrap();
     let mut client = PeachOledClient::new(transport_handle);
 
+    // clear oled display before writing new message
+    client.clear().call().unwrap();
     // send msg to oled for display
     client.write(x_coord, y_coord, string, font_size).call().unwrap();
 }
@@ -44,6 +53,7 @@ pub fn oled_client(x_coord: i32, y_coord: i32, string: String, font_size: String
 /// # Arguments
 ///
 /// * `r` - An unbounded `crossbeam_channel::Receiver` for unsigned 8 byte int.
+///
 pub fn state_changer(r: Receiver<u8>) {
     thread::spawn(move || {
         // initialize the state machine as Welcome
@@ -74,46 +84,37 @@ pub fn state_changer(r: Receiver<u8>) {
     });
 }
 
+
 /// Configures channels for message passing, launches the state machine
-/// changer thread, creates JSON-RPC server method for button press events
-/// and launches the JSON-RPC server.
+/// changer thread and connects to the `peach-buttons` JSON-RPC pubsub
+/// service over websockets.
+///
+/// A Receiver is passed into `state_changer` and the corresponding Sender
+/// is passed into the websockets client. This allows the `button_code` to
+/// be extracted from the received websocket message and passed to the
+/// state machine.
+///
 pub fn run() -> Result<()> {
     // create an unbounded channel
     let (s, r) = unbounded();
     // clone channel so receiver can be moved into `state_changer`
-    let (_s1, r1) = (s.clone(), r.clone());
+    let (mut s1, r1) = (s.clone(), r.clone());
 
     // spawn state-machine thread
     state_changer(r1);
 
-    let mut io = IoHandler::default();
-    // clone channel so sender can be moved into `press` method
-    let (s2, _r2) = (s.clone(), r.clone());
-
-    io.add_method("press", move |params: Params| {
-        let p: Result<Press> = params.parse();
-        match p {
-            // if result contains `button_code`, unwrap
-            Ok(_) => {
-                let p: Press = p.unwrap();
-                // send p.button_code to state_changer via channel sender
-                s2.send(p.button_code).unwrap();
-                Ok(Value::String("success".into()))
-            }
-            Err(e) => Err(Error::from(PressError::MissingParams { e })),
-        }
-    });
-
-    let server = ServerBuilder::new(io)
-        .cors(DomainsValidation::AllowOnly(vec![
-            AccessControlAllowOrigin::Null,
-        ]))
-        .start_http(&"127.0.0.1:3031".parse().unwrap())
-        .expect("Unable to start RPC server");
-
-    server.wait();
-
+    let s2 = &mut s1;
+    
+    connect("ws://127.0.0.1:3030", |out| Client { out: out, s: s2 } ).unwrap();
+    
     Ok(())
+}
+
+#[derive(Debug, Serialize)]
+pub struct SubscribeMsg {
+    pub id: u8,
+    pub jsonrpc: String,
+    pub method: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -121,36 +122,14 @@ pub struct Press {
     pub button_code: u8,
 }
 
-// jsonrpc client
+// jsonrpc peach-oled client
 jsonrpc_client!(pub struct PeachOledClient {
     /// Creates a JSON-RPC request to write to the OLED display.
     pub fn write(&mut self, x_coord: i32, y_coord: i32, string: String, font_size: String) -> RpcRequest<String>;
+
+    /// Creates a JSON-RPC request to clear the OLED display.
+    pub fn clear(&mut self) -> RpcRequest<String>;
 });
-
-// error handling for jsonrpc methods
-#[derive(Debug, Fail)]
-pub enum PressError {
-    /// The errors for the `peach_menu` JSON-RPC server.
-    #[fail(display = "missing expected parameters")]
-    MissingParams { e: Error },
-}
-
-impl From<PressError> for Error {
-    fn from(err: PressError) -> Self {
-        match &err {
-            PressError::MissingParams { e } => Error {
-                code: ErrorCode::ServerError(-32602),
-                message: "invalid params".into(),
-                data: Some(format!("{}", e.message).into()),
-            },
-            err => Error {
-                code: ErrorCode::InternalError,
-                message: "internal error".into(),
-                data: Some(format!("{:?}", err).into()),
-            },
-        }
-    }
-}
 
 #[derive(Debug, PartialEq)]
 /// The states of the state machine.
@@ -206,10 +185,89 @@ impl State {
                 // perform write() call to peach-oled
                 oled_client(x_coord, y_coord, string, font_size);
             }
-            State::Help => println!("Navigation"),
-            State::Clock => println!("Clock"),
-            State::Networking => println!("Network Stats"),
+            State::Help => {
+                let x_coord = 0;
+                let y_coord = 0;
+                let string = "Navigation".to_string();
+                let font_size = "6x8".to_string();
+                // perform write() call to peach-oled
+                oled_client(x_coord, y_coord, string, font_size);
+            }
+            State::Clock => {
+                let x_coord = 0;
+                let y_coord = 0;
+                let string = "Clock".to_string();
+                let font_size = "6x8".to_string();
+                // perform write() call to peach-oled
+                oled_client(x_coord, y_coord, string, font_size);
+            }
+            State::Networking => {
+                let x_coord = 0;
+                let y_coord = 0;
+                let string = "Networking".to_string();
+                let font_size = "6x8".to_string();
+                // perform write() call to peach-oled
+                oled_client(x_coord, y_coord, string, font_size);
+            }
             State::Failure(_) => panic!("State machine failed"),
         }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct ButtonMsg {
+    jsonrpc: String,
+    method: String,
+    params: Vec<u8>,
+}
+
+// websocket client
+#[derive(Debug)]
+pub struct Client<'a> {
+    out: Sender,
+    s: &'a crossbeam_channel::Sender<u8>,
+}
+
+impl <'a> Handler for Client<'a> {
+    /// Sends request to `peach_buttons` to subscribe to emitted events.
+    fn on_open(&mut self, _: Handshake) -> Result<()> {
+        let subscribe = json!({
+            "id":1,
+            "jsonrpc":"2.0",
+            "method":"subscribe_buttons"
+        });
+        let data = subscribe.to_string();
+        self.out.send(data)
+    }
+        
+    /// Displays JSON-RPC request from `peach_buttons`.
+    fn on_message(&mut self, msg: Message) -> Result<()> {
+        // button_code must be extracted from the request and passed to
+        // state_changer
+        let m : String = msg.into_text().unwrap();
+        // regex is used to distinguish button_press events from 
+        // other received jsonrpc requests
+        let re = Regex::new(r"params").unwrap();
+        if re.is_match(&m) {
+            // serialize msg string into a struct
+            let bm : ButtonMsg = serde_json::from_str(&m).unwrap();
+            // send the button_code parameter to state_changer
+            self.s.send(bm.params[0]).unwrap();
+        }
+        Ok(())
+    }
+
+    /// Handles disconnection from websocket and displays debug data.
+    fn on_close(&mut self, code: CloseCode, reason: &str) {
+        match code {
+            CloseCode::Normal => println!("The client is done with the connection."),
+            CloseCode::Away => println!("The client is leaving the site."),
+            CloseCode::Abnormal => println!("Closing handshake failed! Unable to obtain closing status from client."),
+            _ => println!("The client encountered an error: {}", reason),
+        }
+    }
+
+    fn on_error(&mut self, err: Error) {
+        println!("The server encountered an error: {:?}", err);
     }
 }
