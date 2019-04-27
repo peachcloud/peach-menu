@@ -43,6 +43,12 @@ Run the binary:
 
 _Note: Will currently panic if `peach_buttons` is not running (connection to ws server fails)._
 
+Logging is made available with `env_logger`:
+
+`RUST_LOG=info ./target/debug/peach-menu`
+
+_Other logging levels include debug, warn and error._
+
 ### Resources
 
 This work was made much, much easier by the awesome blog post titled [Pretty State Machine Patterns in Rust](https://hoverbear.org/2016/10/12/rust-state-machine-pattern/) by [hoverbear](https://hoverbear.org/about/). Thanks hoverbear!
