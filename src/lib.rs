@@ -5,6 +5,8 @@
 //! with `peach-buttons` providing GPIO input data and `peach-oled` receiving 
 //! output data for display.
 
+#[macro_use]
+pub extern crate log;
 extern crate crossbeam_channel;
 #[macro_use]
 extern crate jsonrpc_client_core;
@@ -36,15 +38,20 @@ use regex::Regex;
 /// * `font_size` - A String containing `6x8`, `6x12`, `8x16` or `12x16`
 ///
 pub fn oled_client(x_coord: i32, y_coord: i32, string: String, font_size: String) {
+    debug!("Creating HTTP transport for OLED client.");
     // create http transport for json-rpc comms
     let transport = HttpTransport::new().standalone().unwrap();
+    debug!("Creating HTTP transport handle on 127.0.0.1:3031.");
     let transport_handle = transport.handle("http://127.0.0.1:3031").unwrap();
+    info!("Creating client for peach_oled service.");
     let mut client = PeachOledClient::new(transport_handle);
 
     // clear oled display before writing new message
     client.clear().call().unwrap();
+    debug!("Cleared the OLED display.");
     // send msg to oled for display
     client.write(x_coord, y_coord, string, font_size).call().unwrap();
+    debug!("Wrote to the OLED display.");
 }
 
 /// Initializes the state machine, listens for button events and drives
@@ -57,6 +64,7 @@ pub fn oled_client(x_coord: i32, y_coord: i32, string: String, font_size: String
 pub fn state_changer(r: Receiver<u8>) {
     thread::spawn(move || {
         // initialize the state machine as Welcome
+        info!("Initializing the state machine.");
         let mut state = State::Welcome;
         loop {
             // listen for button_code from json-rpc server
@@ -76,6 +84,7 @@ pub fn state_changer(r: Receiver<u8>) {
             state = state.next(event);
             if let State::Failure(_string) = state {
                 //break;
+                error!("State machine entered a failure state.");
                 panic!("Failed");
             } else {
                 state.run();
@@ -95,12 +104,14 @@ pub fn state_changer(r: Receiver<u8>) {
 /// state machine.
 ///
 pub fn run() -> Result<()> {
-    // create an unbounded channel
+    info!("Starting up.");
+
+    debug!("Creating unbounded channel for message passing.");
     let (s, r) = unbounded();
     // clone channel so receiver can be moved into `state_changer`
     let (mut s1, r1) = (s.clone(), r.clone());
 
-    // spawn state-machine thread
+    debug!("Spawning state-machine thread.");
     state_changer(r1);
 
     let s2 = &mut s1;
@@ -178,6 +189,7 @@ impl State {
     pub fn run(&self) {
         match *self {
             State::Welcome => {
+                info!("State changed to: Welcome.");
                 let x_coord = 0;
                 let y_coord = 0;
                 let string = "Welcome to PeachCloud".to_string();
@@ -186,6 +198,7 @@ impl State {
                 oled_client(x_coord, y_coord, string, font_size);
             }
             State::Help => {
+                info!("State changed to: Help.");
                 let x_coord = 0;
                 let y_coord = 0;
                 let string = "Navigation".to_string();
@@ -194,6 +207,7 @@ impl State {
                 oled_client(x_coord, y_coord, string, font_size);
             }
             State::Clock => {
+                info!("State changed to: Clock.");
                 let x_coord = 0;
                 let y_coord = 0;
                 let string = "Clock".to_string();
@@ -202,6 +216,7 @@ impl State {
                 oled_client(x_coord, y_coord, string, font_size);
             }
             State::Networking => {
+                info!("State changed to: Networking.");
                 let x_coord = 0;
                 let y_coord = 0;
                 let string = "Networking".to_string();
@@ -209,7 +224,10 @@ impl State {
                 // perform write() call to peach-oled
                 oled_client(x_coord, y_coord, string, font_size);
             }
-            State::Failure(_) => panic!("State machine failed"),
+            State::Failure(_) => {
+                error!("State machine failed during run method.");
+                panic!("State machine failed")
+            },
         }
     }
 }
@@ -231,6 +249,7 @@ pub struct Client<'a> {
 impl <'a> Handler for Client<'a> {
     /// Sends request to `peach_buttons` to subscribe to emitted events.
     fn on_open(&mut self, _: Handshake) -> Result<()> {
+        info!("Subscribing to peach_buttons microservice over ws.");
         let subscribe = json!({
             "id":1,
             "jsonrpc":"2.0",
@@ -242,6 +261,7 @@ impl <'a> Handler for Client<'a> {
         
     /// Displays JSON-RPC request from `peach_buttons`.
     fn on_message(&mut self, msg: Message) -> Result<()> {
+        info!("Received ws message from peach_buttons.");
         // button_code must be extracted from the request and passed to
         // state_changer
         let m : String = msg.into_text().unwrap();
@@ -251,6 +271,7 @@ impl <'a> Handler for Client<'a> {
         if re.is_match(&m) {
             // serialize msg string into a struct
             let bm : ButtonMsg = serde_json::from_str(&m).unwrap();
+            debug!("Sending button code to state_changer.");
             // send the button_code parameter to state_changer
             self.s.send(bm.params[0]).unwrap();
         }
@@ -260,14 +281,20 @@ impl <'a> Handler for Client<'a> {
     /// Handles disconnection from websocket and displays debug data.
     fn on_close(&mut self, code: CloseCode, reason: &str) {
         match code {
-            CloseCode::Normal => println!("The client is done with the connection."),
-            CloseCode::Away => println!("The client is leaving the site."),
-            CloseCode::Abnormal => println!("Closing handshake failed! Unable to obtain closing status from client."),
-            _ => println!("The client encountered an error: {}", reason),
+            CloseCode::Normal => {
+                info!("The client is done with the connection.");
+            },
+            CloseCode::Away => {
+                info!("The client is leaving the site.");
+            },
+            CloseCode::Abnormal => {
+                warn!("Closing handshake failed! Unable to obtain closing status from client.");
+            },
+            _ => error!("The client encountered an error: {}", reason),
         }
     }
 
     fn on_error(&mut self, err: Error) {
-        println!("The server encountered an error: {:?}", err);
+        error!("The server encountered an error: {:?}", err);
     }
 }
