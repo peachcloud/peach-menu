@@ -12,7 +12,6 @@ extern crate crossbeam_channel;
 extern crate jsonrpc_client_core;
 extern crate jsonrpc_client_http;
 extern crate ws;
-extern crate regex;
 
 use std::thread;
 
@@ -25,7 +24,6 @@ use jsonrpc_http_server::jsonrpc_core::*;
 use ws::{connect, Handler, Sender, Result, Message, Handshake, CloseCode, Error};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use regex::Regex;
 
 /// Creates a JSON-RPC client with http transport and calls the `peach-oled`
 /// `clear` and `write` methods.
@@ -116,7 +114,7 @@ pub fn run() -> Result<()> {
 
     let s2 = &mut s1;
     
-    connect("ws://127.0.0.1:3030", |out| Client { out: out, s: s2 } ).unwrap();
+    connect("ws://127.0.0.1:3030", |out| Client { out, s: s2 } ).unwrap();
     
     Ok(())
 }
@@ -265,10 +263,8 @@ impl <'a> Handler for Client<'a> {
         // button_code must be extracted from the request and passed to
         // state_changer
         let m : String = msg.into_text().unwrap();
-        // regex is used to distinguish button_press events from 
-        // other received jsonrpc requests
-        let re = Regex::new(r"params").unwrap();
-        if re.is_match(&m) {
+        // distinguish button_press events from other received jsonrpc requests
+        if m.contains(r"params") {
             // serialize msg string into a struct
             let bm : ButtonMsg = serde_json::from_str(&m).unwrap();
             debug!("Sending button code to state_changer.");
