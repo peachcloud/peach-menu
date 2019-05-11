@@ -13,7 +13,7 @@ extern crate jsonrpc_client_core;
 extern crate jsonrpc_client_http;
 extern crate ws;
 
-use std::thread;
+use std::{process, thread};
 
 use crossbeam_channel::unbounded;
 use crossbeam_channel::*;
@@ -23,6 +23,7 @@ use jsonrpc_http_server::jsonrpc_core::*;
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+
 use ws::{connect, CloseCode, Error, Handler, Handshake, Message, Sender};
 
 #[derive(Debug)]
@@ -91,7 +92,10 @@ pub fn state_changer(r: Receiver<u8>) {
         let mut state = State::Welcome;
         loop {
             // listen for button_code from json-rpc server
-            let button_code = r.recv().unwrap();
+            let button_code = r.recv().unwrap_or_else(|err| {
+                error!("Problem receiving button code from server: {}", err);
+                process::exit(1);
+            });
             // match on button_code & pass event to state.next
             let event = match button_code {
                 // button code mappings
@@ -107,7 +111,7 @@ pub fn state_changer(r: Receiver<u8>) {
             state = state.next(event);
             if let State::Failure(_string) = state {
                 error!("State machine entered a failure state.");
-                panic!("Failed");
+                process::exit(1);
             } else {
                 state.run();
             }
@@ -229,10 +233,9 @@ impl State {
                 let string = "Navigation".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size)
-                    .unwrap_or_else(|_err| {
-                        error!("Problem executing OLED client call.");
-                    });
+                oled_client(x_coord, y_coord, string, font_size).unwrap_or_else(|_err| {
+                    error!("Problem executing OLED client call.");
+                });
             }
             State::Clock => {
                 info!("State changed to: Clock.");
@@ -241,10 +244,9 @@ impl State {
                 let string = "Clock".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size)
-                    .unwrap_or_else(|_err| {
-                        error!("Problem executing OLED client call.");
-                    });
+                oled_client(x_coord, y_coord, string, font_size).unwrap_or_else(|_err| {
+                    error!("Problem executing OLED client call.");
+                });
             }
             State::Networking => {
                 info!("State changed to: Networking.");
@@ -253,14 +255,12 @@ impl State {
                 let string = "Networking".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size)
-                    .unwrap_or_else(|_err| {
-                        error!("Problem executing OLED client call.");
-                    });
+                oled_client(x_coord, y_coord, string, font_size).unwrap_or_else(|_err| {
+                    error!("Problem executing OLED client call.");
+                });
             }
             State::Failure(_) => {
                 error!("State machine failed during run method.");
-                panic!("State machine failed")
             }
         }
     }
@@ -298,14 +298,20 @@ impl<'a> Handler for Client<'a> {
         info!("Received ws message from peach_buttons.");
         // button_code must be extracted from the request and passed to
         // state_changer
-        let m: String = msg.into_text().unwrap();
+        let m: String = msg.into_text()?;
         // distinguish button_press events from other received jsonrpc requests
         if m.contains(r"params") {
             // serialize msg string into a struct
-            let bm: ButtonMsg = serde_json::from_str(&m).unwrap();
+            let bm: ButtonMsg = serde_json::from_str(&m).unwrap_or_else(|err| {
+                error!("Problem serializing button_code msg: {}", err);
+                process::exit(1);
+            });
             debug!("Sending button code to state_changer.");
             // send the button_code parameter to state_changer
-            self.s.send(bm.params[0]).unwrap();
+            self.s.send(bm.params[0]).unwrap_or_else(|err| {
+                error!("Problem sending button_code over channel: {}", err);
+                process::exit(1);
+            });
         }
         Ok(())
     }
