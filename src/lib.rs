@@ -1,8 +1,8 @@
 //! # peach-menu
 //!
 //! `peach_menu` is a collection of utilities and data structures for running
-//! a menu state machine. I/O takes place using JSON-RPC 2.0 over websockets, 
-//! with `peach-buttons` providing GPIO input data and `peach-oled` receiving 
+//! a menu state machine. I/O takes place using JSON-RPC 2.0 over websockets,
+//! with `peach-buttons` providing GPIO input data and `peach-oled` receiving
 //! output data for display.
 
 #[macro_use]
@@ -21,9 +21,27 @@ use crossbeam_channel::*;
 use jsonrpc_client_http::HttpTransport;
 use jsonrpc_http_server::jsonrpc_core::*;
 
-use ws::{connect, Handler, Sender, Result, Message, Handshake, CloseCode, Error};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use ws::{connect, CloseCode, Error, Handler, Handshake, Message, Sender};
+
+#[derive(Debug)]
+pub enum MenuError {
+    OledHttp(jsonrpc_client_http::Error),
+    OledClient(jsonrpc_client_core::Error),
+}
+
+impl From<jsonrpc_client_http::Error> for MenuError {
+    fn from(err: jsonrpc_client_http::Error) -> MenuError {
+        MenuError::OledHttp(err)
+    }
+}
+
+impl From<jsonrpc_client_core::Error> for MenuError {
+    fn from(err: jsonrpc_client_core::Error) -> MenuError {
+        MenuError::OledClient(err)
+    }
+}
 
 /// Creates a JSON-RPC client with http transport and calls the `peach-oled`
 /// `clear` and `write` methods.
@@ -35,21 +53,28 @@ use serde_json::json;
 /// * `string` - A String containing the message to be displayed.
 /// * `font_size` - A String containing `6x8`, `6x12`, `8x16` or `12x16`
 ///
-pub fn oled_client(x_coord: i32, y_coord: i32, string: String, font_size: String) {
+pub fn oled_client(
+    x_coord: i32,
+    y_coord: i32,
+    string: String,
+    font_size: String,
+) -> std::result::Result<(), MenuError> {
     debug!("Creating HTTP transport for OLED client.");
     // create http transport for json-rpc comms
-    let transport = HttpTransport::new().standalone().unwrap();
+    let transport = HttpTransport::new().standalone()?;
     debug!("Creating HTTP transport handle on 127.0.0.1:3031.");
-    let transport_handle = transport.handle("http://127.0.0.1:3031").unwrap();
+    let transport_handle = transport.handle("http://127.0.0.1:3031")?;
     info!("Creating client for peach_oled service.");
     let mut client = PeachOledClient::new(transport_handle);
 
     // clear oled display before writing new message
-    client.clear().call().unwrap();
+    client.clear().call()?;
     debug!("Cleared the OLED display.");
     // send msg to oled for display
-    client.write(x_coord, y_coord, string, font_size).call().unwrap();
+    client.write(x_coord, y_coord, string, font_size).call()?;
     debug!("Wrote to the OLED display.");
+
+    Ok(())
 }
 
 /// Initializes the state machine, listens for button events and drives
@@ -81,7 +106,6 @@ pub fn state_changer(r: Receiver<u8>) {
             };
             state = state.next(event);
             if let State::Failure(_string) = state {
-                //break;
                 error!("State machine entered a failure state.");
                 panic!("Failed");
             } else {
@@ -90,7 +114,6 @@ pub fn state_changer(r: Receiver<u8>) {
         }
     });
 }
-
 
 /// Configures channels for message passing, launches the state machine
 /// changer thread and connects to the `peach-buttons` JSON-RPC pubsub
@@ -101,7 +124,7 @@ pub fn state_changer(r: Receiver<u8>) {
 /// be extracted from the received websocket message and passed to the
 /// state machine.
 ///
-pub fn run() -> Result<()> {
+pub fn run() -> std::result::Result<(), Box<dyn std::error::Error>> {
     info!("Starting up.");
 
     debug!("Creating unbounded channel for message passing.");
@@ -113,9 +136,9 @@ pub fn run() -> Result<()> {
     state_changer(r1);
 
     let s2 = &mut s1;
-    
-    connect("ws://127.0.0.1:3030", |out| Client { out, s: s2 } ).unwrap();
-    
+
+    connect("ws://127.0.0.1:3030", |out| Client { out, s: s2 })?;
+
     Ok(())
 }
 
@@ -193,7 +216,11 @@ impl State {
                 let string = "Welcome to PeachCloud".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size);
+                oled_client(x_coord, y_coord, string, font_size)
+                    // this needs to be handled better! impl Display !!!
+                    .unwrap_or_else(|_err| {
+                        error!("Problem executing OLED client call.");
+                    });
             }
             State::Help => {
                 info!("State changed to: Help.");
@@ -202,7 +229,10 @@ impl State {
                 let string = "Navigation".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size);
+                oled_client(x_coord, y_coord, string, font_size)
+                    .unwrap_or_else(|_err| {
+                        error!("Problem executing OLED client call.");
+                    });
             }
             State::Clock => {
                 info!("State changed to: Clock.");
@@ -211,7 +241,10 @@ impl State {
                 let string = "Clock".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size);
+                oled_client(x_coord, y_coord, string, font_size)
+                    .unwrap_or_else(|_err| {
+                        error!("Problem executing OLED client call.");
+                    });
             }
             State::Networking => {
                 info!("State changed to: Networking.");
@@ -220,12 +253,15 @@ impl State {
                 let string = "Networking".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size);
+                oled_client(x_coord, y_coord, string, font_size)
+                    .unwrap_or_else(|_err| {
+                        error!("Problem executing OLED client call.");
+                    });
             }
             State::Failure(_) => {
                 error!("State machine failed during run method.");
                 panic!("State machine failed")
-            },
+            }
         }
     }
 }
@@ -244,9 +280,9 @@ pub struct Client<'a> {
     s: &'a crossbeam_channel::Sender<u8>,
 }
 
-impl <'a> Handler for Client<'a> {
+impl<'a> Handler for Client<'a> {
     /// Sends request to `peach_buttons` to subscribe to emitted events.
-    fn on_open(&mut self, _: Handshake) -> Result<()> {
+    fn on_open(&mut self, _: Handshake) -> ws::Result<()> {
         info!("Subscribing to peach_buttons microservice over ws.");
         let subscribe = json!({
             "id":1,
@@ -256,17 +292,17 @@ impl <'a> Handler for Client<'a> {
         let data = subscribe.to_string();
         self.out.send(data)
     }
-        
+
     /// Displays JSON-RPC request from `peach_buttons`.
-    fn on_message(&mut self, msg: Message) -> Result<()> {
+    fn on_message(&mut self, msg: Message) -> ws::Result<()> {
         info!("Received ws message from peach_buttons.");
         // button_code must be extracted from the request and passed to
         // state_changer
-        let m : String = msg.into_text().unwrap();
+        let m: String = msg.into_text().unwrap();
         // distinguish button_press events from other received jsonrpc requests
         if m.contains(r"params") {
             // serialize msg string into a struct
-            let bm : ButtonMsg = serde_json::from_str(&m).unwrap();
+            let bm: ButtonMsg = serde_json::from_str(&m).unwrap();
             debug!("Sending button code to state_changer.");
             // send the button_code parameter to state_changer
             self.s.send(bm.params[0]).unwrap();
@@ -279,13 +315,13 @@ impl <'a> Handler for Client<'a> {
         match code {
             CloseCode::Normal => {
                 info!("The client is done with the connection.");
-            },
+            }
             CloseCode::Away => {
                 info!("The client is leaving the site.");
-            },
+            }
             CloseCode::Abnormal => {
                 warn!("Closing handshake failed! Unable to obtain closing status from client.");
-            },
+            }
             _ => error!("The client encountered an error: {}", reason),
         }
     }
