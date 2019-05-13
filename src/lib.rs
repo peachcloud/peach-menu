@@ -20,6 +20,8 @@ use crossbeam_channel::*;
 
 use jsonrpc_client_http::HttpTransport;
 use jsonrpc_http_server::jsonrpc_core::*;
+#[allow(unused_imports)]
+use jsonrpc_test as test;
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -334,5 +336,24 @@ impl<'a> Handler for Client<'a> {
 
     fn on_error(&mut self, err: Error) {
         error!("The server encountered an error: {:?}", err);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // test to ensure correct success response
+    #[test]
+    fn rpc_success() {
+        let rpc = {
+            let mut io = IoHandler::new();
+            io.add_method("rpc_success_response", |_| {
+                Ok(Value::String("success".into()))
+            });
+            test::Rpc::from(io)
+        };
+
+        assert_eq!(rpc.request("rpc_success_response", &()), r#""success""#);
     }
 }
