@@ -56,7 +56,7 @@ impl From<jsonrpc_client_core::Error> for MenuError {
 /// * `string` - A String containing the message to be displayed.
 /// * `font_size` - A String containing `6x8`, `6x12`, `8x16` or `12x16`
 ///
-pub fn oled_client(
+pub fn oled_write(
     x_coord: i32,
     y_coord: i32,
     string: String,
@@ -70,12 +70,41 @@ pub fn oled_client(
     info!("Creating client for peach_oled service.");
     let mut client = PeachOledClient::new(transport_handle);
 
-    // clear oled display before writing new message
-    client.clear().call()?;
-    debug!("Cleared the OLED display.");
     // send msg to oled for display
     client.write(x_coord, y_coord, string, font_size).call()?;
     debug!("Wrote to the OLED display.");
+
+    Ok(())
+}
+
+pub fn oled_clear() -> std::result::Result<(), MenuError> {
+    debug!("Creating HTTP transport for OLED client.");
+    // create http transport for json-rpc comms
+    let transport = HttpTransport::new().standalone()?;
+    debug!("Creating HTTP transport handle on 127.0.0.1:3031.");
+    let transport_handle = transport.handle("http://127.0.0.1:3031")?;
+    info!("Creating client for peach_oled service.");
+    let mut client = PeachOledClient::new(transport_handle);
+
+    // clear oled display before writing new message
+    client.clear().call()?;
+    debug!("Cleared the OLED display.");
+
+    Ok(())
+}
+
+pub fn oled_flush() -> std::result::Result<(), MenuError> {
+    debug!("Creating HTTP transport for OLED client.");
+    // create http transport for json-rpc comms
+    let transport = HttpTransport::new().standalone()?;
+    debug!("Creating HTTP transport handle on 127.0.0.1:3031.");
+    let transport_handle = transport.handle("http://127.0.0.1:3031")?;
+    info!("Creating client for peach_oled service.");
+    let mut client = PeachOledClient::new(transport_handle);
+
+    // clear oled display before writing new message
+    client.flush().call()?;
+    debug!("Flushed the OLED display.");
 
     Ok(())
 }
@@ -167,6 +196,9 @@ jsonrpc_client!(pub struct PeachOledClient {
 
     /// Creates a JSON-RPC request to clear the OLED display.
     pub fn clear(&mut self) -> RpcRequest<String>;
+
+    /// Creates a JSON-RPC request to flush the OLED display.
+    pub fn flush(&mut self) -> RpcRequest<String>;
 });
 
 #[derive(Debug, PartialEq)]
@@ -216,50 +248,62 @@ impl State {
     pub fn run(&self) {
         match *self {
             State::Welcome => {
+                oled_clear().unwrap();
                 info!("State changed to: Welcome.");
                 let x_coord = 0;
                 let y_coord = 0;
                 let string = "Welcome to PeachCloud".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size)
+                oled_write(x_coord, y_coord, string, font_size)
                     // this needs to be handled better! impl Display !!!
                     .unwrap_or_else(|_err| {
                         error!("Problem executing OLED client call.");
                     });
+                oled_flush().unwrap();
             }
             State::Help => {
+                oled_clear().unwrap();
                 info!("State changed to: Help.");
                 let x_coord = 0;
                 let y_coord = 0;
                 let string = "Navigation".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size).unwrap_or_else(|_err| {
+                oled_write(x_coord, y_coord, string, font_size).unwrap_or_else(|_err| {
                     error!("Problem executing OLED client call.");
                 });
+                oled_flush().unwrap();
             }
             State::Clock => {
+                oled_clear().unwrap();
                 info!("State changed to: Clock.");
                 let x_coord = 0;
                 let y_coord = 0;
                 let string = "Clock".to_string();
                 let font_size = "6x8".to_string();
                 // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size).unwrap_or_else(|_err| {
+                oled_write(x_coord, y_coord, string, font_size).unwrap_or_else(|_err| {
                     error!("Problem executing OLED client call.");
                 });
+                oled_flush().unwrap();
             }
             State::Networking => {
                 info!("State changed to: Networking.");
-                let x_coord = 0;
-                let y_coord = 0;
-                let string = "Networking".to_string();
-                let font_size = "6x8".to_string();
-                // perform write() call to peach-oled
-                oled_client(x_coord, y_coord, string, font_size).unwrap_or_else(|_err| {
-                    error!("Problem executing OLED client call.");
-                });
+                oled_clear().unwrap();
+                oled_write(0, 0, "Network mode: Client".to_string(), "6x8".to_string())
+                    .unwrap_or_else(|_| {
+                        error!("Problem executing OLED client call.");
+                    });
+                oled_write(0, 10, "Wireless AP: Home".to_string(), "6x8".to_string())
+                    .unwrap_or_else(|_err| {
+                        error!("Problem executing OLED client call.");
+                    });
+                oled_write(0, 20, "IP: 192.168.1.34".to_string(), "6x8".to_string())
+                    .unwrap_or_else(|_err| {
+                        error!("Problem executing OLED client call.");
+                    });
+                oled_flush().unwrap();
             }
             State::Failure(_) => {
                 error!("State machine failed during run method.");
