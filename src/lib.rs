@@ -13,6 +13,8 @@ extern crate jsonrpc_client_core;
 extern crate jsonrpc_client_http;
 extern crate ws;
 
+mod error;
+
 use std::{env, process, thread};
 
 use crossbeam_channel::unbounded;
@@ -28,23 +30,7 @@ use serde_json::json;
 
 use ws::{connect, CloseCode, Error, Handler, Handshake, Message, Sender};
 
-#[derive(Debug)]
-pub enum MenuError {
-    OledHttp(jsonrpc_client_http::Error),
-    OledClient(jsonrpc_client_core::Error),
-}
-
-impl From<jsonrpc_client_http::Error> for MenuError {
-    fn from(err: jsonrpc_client_http::Error) -> MenuError {
-        MenuError::OledHttp(err)
-    }
-}
-
-impl From<jsonrpc_client_core::Error> for MenuError {
-    fn from(err: jsonrpc_client_core::Error) -> MenuError {
-        MenuError::OledClient(err)
-    }
-}
+use crate::error::MenuError;
 
 /// Creates a JSON-RPC client with http transport and calls the `peach-oled`
 /// `clear`, `flush` and `write` methods.
