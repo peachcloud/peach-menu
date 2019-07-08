@@ -24,8 +24,7 @@ _Note: This module is a work-in-progress._
 Welcome,  
 Help,  
 Clock,  
-Networking,  
-Failure
+Networking
 ```
 
 ### Environment
