@@ -28,6 +28,20 @@ Networking,
 Failure
 ```
 
+### Environment
+
+The JSON-RPC HTTP server address and port for the OLED microservice can be configured with the `PEACH_OLED_SERVER` environment variable:
+
+`export PEACH_OLED_SERVER=127.0.0.1:5000`
+
+When not set, the value defaults to `127.0.0.1:5112`.
+
+Logging is made available with `env_logger`:
+
+`export RUST_LOG=info`
+
+Other logging levels include `debug`, `warn` and `error`.
+
 ### Setup
 
 Clone this repo:
@@ -44,12 +58,6 @@ Run the binary:
 `./target/debug/peach-menu`
 
 _Note: Will currently panic if `peach_buttons` is not running (connection to ws server fails)._
-
-Logging is made available with `env_logger`:
-
-`RUST_LOG=info ./target/debug/peach-menu`
-
-_Other logging levels include debug, warn and error._
 
 ### Resources
 

@@ -13,7 +13,7 @@ extern crate jsonrpc_client_core;
 extern crate jsonrpc_client_http;
 extern crate ws;
 
-use std::{process, thread};
+use std::{env, process, thread};
 
 use crossbeam_channel::unbounded;
 use crossbeam_channel::*;
@@ -47,7 +47,7 @@ impl From<jsonrpc_client_core::Error> for MenuError {
 }
 
 /// Creates a JSON-RPC client with http transport and calls the `peach-oled`
-/// `clear` and `write` methods.
+/// `clear`, `flush` and `write` methods.
 ///
 /// # Arguments
 ///
@@ -63,14 +63,14 @@ pub fn oled_write(
     font_size: String,
 ) -> std::result::Result<(), MenuError> {
     debug!("Creating HTTP transport for OLED client.");
-    // create http transport for json-rpc comms
     let transport = HttpTransport::new().standalone()?;
-    debug!("Creating HTTP transport handle on 127.0.0.1:3031.");
-    let transport_handle = transport.handle("http://127.0.0.1:3031")?;
+    let http_addr = env::var("PEACH_OLED_SERVER").unwrap_or_else(|_| "127.0.0.1:5112".to_string());
+    let http_server = format!("http://{}", http_addr);
+    debug!("Creating HTTP transport handle on {}.", http_server);
+    let transport_handle = transport.handle(&http_server)?;
     info!("Creating client for peach_oled service.");
     let mut client = PeachOledClient::new(transport_handle);
 
-    // send msg to oled for display
     client.write(x_coord, y_coord, string, font_size).call()?;
     debug!("Wrote to the OLED display.");
 
@@ -79,14 +79,14 @@ pub fn oled_write(
 
 pub fn oled_clear() -> std::result::Result<(), MenuError> {
     debug!("Creating HTTP transport for OLED client.");
-    // create http transport for json-rpc comms
     let transport = HttpTransport::new().standalone()?;
-    debug!("Creating HTTP transport handle on 127.0.0.1:3031.");
-    let transport_handle = transport.handle("http://127.0.0.1:3031")?;
+    let http_addr = env::var("PEACH_OLED_SERVER").unwrap_or_else(|_| "127.0.0.1:5112".to_string());
+    let http_server = format!("http://{}", http_addr);
+    debug!("Creating HTTP transport handle on {}.", http_server);
+    let transport_handle = transport.handle(&http_server)?;
     info!("Creating client for peach_oled service.");
     let mut client = PeachOledClient::new(transport_handle);
 
-    // clear oled display before writing new message
     client.clear().call()?;
     debug!("Cleared the OLED display.");
 
@@ -95,14 +95,14 @@ pub fn oled_clear() -> std::result::Result<(), MenuError> {
 
 pub fn oled_flush() -> std::result::Result<(), MenuError> {
     debug!("Creating HTTP transport for OLED client.");
-    // create http transport for json-rpc comms
     let transport = HttpTransport::new().standalone()?;
-    debug!("Creating HTTP transport handle on 127.0.0.1:3031.");
-    let transport_handle = transport.handle("http://127.0.0.1:3031")?;
+    let http_addr = env::var("PEACH_OLED_SERVER").unwrap_or_else(|_| "127.0.0.1:5112".to_string());
+    let http_server = format!("http://{}", http_addr);
+    debug!("Creating HTTP transport handle on {}.", http_server);
+    let transport_handle = transport.handle(&http_server)?;
     info!("Creating client for peach_oled service.");
     let mut client = PeachOledClient::new(transport_handle);
 
-    // clear oled display before writing new message
     client.flush().call()?;
     debug!("Flushed the OLED display.");
 
@@ -172,7 +172,11 @@ pub fn run() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     let s2 = &mut s1;
 
-    connect("ws://127.0.0.1:3030", |out| Client { out, s: s2 })?;
+    let ws_addr = env::var("PEACH_BUTTONS_SERVER").unwrap_or_else(|_| "127.0.0.1:5111".to_string());
+
+    let ws_server = format!("ws://{}", ws_addr);
+
+    connect(ws_server, |out| Client { out, s: s2 })?;
 
     Ok(())
 }
