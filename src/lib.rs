@@ -14,6 +14,7 @@ extern crate ws;
 
 mod buttons;
 mod error;
+mod network;
 mod oled;
 mod state_machine;
 

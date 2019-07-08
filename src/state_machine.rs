@@ -5,6 +5,7 @@ use std::{process, thread};
 
 use crossbeam_channel::*;
 
+use crate::network::*;
 use crate::oled::*;
 
 #[derive(Debug, Clone, Copy)]
@@ -127,6 +128,12 @@ impl State {
             }
             State::Networking => {
                 info!("State changed to: Networking.");
+                let ip = match network_get_ip("wlan0".to_string()) {
+                    Ok(ip) => ip,
+                    Err(_) => "x.x.x.x".to_string(),
+                };
+                let show_ip = format!("IP: {}", ip);
+
                 oled_clear().unwrap();
                 oled_write(0, 0, "Network mode: Client".to_string(), "6x8".to_string())
                     .unwrap_or_else(|_| {
@@ -136,10 +143,9 @@ impl State {
                     .unwrap_or_else(|_err| {
                         error!("Problem executing OLED client call.");
                     });
-                oled_write(0, 20, "IP: 192.168.1.34".to_string(), "6x8".to_string())
-                    .unwrap_or_else(|_err| {
-                        error!("Problem executing OLED client call.");
-                    });
+                oled_write(0, 20, show_ip, "6x8".to_string()).unwrap_or_else(|_err| {
+                    error!("Problem executing OLED client call.");
+                });
                 oled_flush().unwrap();
             }
         }
