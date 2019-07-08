@@ -134,15 +134,20 @@ impl State {
                 };
                 let show_ip = format!("IP: {}", ip);
 
+                let ssid = match network_get_ssid("wlan0".to_string()) {
+                    Ok(ssid) => ssid,
+                    Err(_) => "Not connected".to_string(),
+                };
+                let show_ssid = format!("SSID: {}", ssid);
+
                 oled_clear().unwrap();
                 oled_write(0, 0, "Network mode: Client".to_string(), "6x8".to_string())
                     .unwrap_or_else(|_| {
                         error!("Problem executing OLED client call.");
                     });
-                oled_write(0, 10, "Wireless AP: Home".to_string(), "6x8".to_string())
-                    .unwrap_or_else(|_err| {
-                        error!("Problem executing OLED client call.");
-                    });
+                oled_write(0, 10, show_ssid, "6x8".to_string()).unwrap_or_else(|_err| {
+                    error!("Problem executing OLED client call.");
+                });
                 oled_write(0, 20, show_ip, "6x8".to_string()).unwrap_or_else(|_err| {
                     error!("Problem executing OLED client call.");
                 });
