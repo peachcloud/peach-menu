@@ -128,32 +128,43 @@ impl State {
             }
             State::Networking => {
                 info!("State changed to: Networking.");
-                let ip = match network_get_ip("wlan0".to_string()) {
+                // add rpc to peach_network: get_mode(iface)
+                //  use wpactrl STATUS (mode=station)
+                let mode = "MODE: Client".to_string();
+                // add rpc to peach_network: get_status(iface)
+                let status = "STATUS: Up".to_string();
+                let ip = match network_get_ip("wlan1".to_string()) {
                     Ok(ip) => ip,
                     Err(_) => "x.x.x.x".to_string(),
                 };
-                let show_ip = format!("IP: {}", ip);
+                let address = format!("IP: {}", ip);
 
-                let ssid = match network_get_ssid("wlan0".to_string()) {
+                let ssid = match network_get_ssid("wlan1".to_string()) {
                     Ok(ssid) => ssid,
                     Err(_) => "Not connected".to_string(),
                 };
-                let show_ssid = format!("SSID: {}", ssid);
+                let network = format!("NETWORK: {}", ssid);
 
-                let rssi = match network_get_rssi("wlan0".to_string()) {
+                let rssi = match network_get_rssi("wlan1".to_string()) {
                     Ok(rssi) => rssi,
                     Err(_) => "Not connected".to_string(),
                 };
-                let show_rssi = format!("RSSI: {}", rssi);
+                let signal = format!("SIGNAL: {}dBm", rssi);
 
                 oled_clear().unwrap();
-                oled_write(0, 0, show_ip, "6x8".to_string()).unwrap_or_else(|_err| {
+                oled_write(0, 0, mode, "6x8".to_string()).unwrap_or_else(|_err| {
                     error!("Problem executing OLED client call.");
                 });
-                oled_write(0, 10, show_ssid, "6x8".to_string()).unwrap_or_else(|_err| {
+                oled_write(0, 9, status, "6x8".to_string()).unwrap_or_else(|_err| {
                     error!("Problem executing OLED client call.");
                 });
-                oled_write(0, 20, show_rssi, "6x8".to_string()).unwrap_or_else(|_| {
+                oled_write(0, 18, network, "6x8".to_string()).unwrap_or_else(|_err| {
+                    error!("Problem executing OLED client call.");
+                });
+                oled_write(0, 27, address, "6x8".to_string()).unwrap_or_else(|_| {
+                    error!("Problem executing OLED client call.");
+                });
+                oled_write(0, 36, signal, "6x8".to_string()).unwrap_or_else(|_| {
                     error!("Problem executing OLED client call.");
                 });
                 oled_flush().unwrap();
