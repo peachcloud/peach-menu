@@ -53,7 +53,7 @@ pub fn oled_write(
     y_coord: i32,
     string: String,
     font_size: String,
-) -> std::result::Result<(), MenuError> {
+) -> std::result::Result<String, MenuError> {
     debug!("Creating HTTP transport for OLED client.");
     let transport = HttpTransport::new().standalone()?;
     let http_addr = env::var("PEACH_OLED_SERVER").unwrap_or_else(|_| "127.0.0.1:5112".to_string());
@@ -66,7 +66,7 @@ pub fn oled_write(
     client.write(x_coord, y_coord, string, font_size).call()?;
     debug!("Wrote to the OLED display.");
 
-    Ok(())
+    Ok("success".to_string())
 }
 
 jsonrpc_client!(pub struct PeachOledClient {
