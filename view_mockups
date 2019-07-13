@@ -1,0 +1,81 @@
+ 	 ---------------------	 	  ---------------------
+ 	|PeachCloud      21:27|		 |PeachCloud      11:11|
+ 	|                     |		 |                     |
+ 	| > Networking        |		 |   Networking        |
+ 	|   System Stats      |		 | > System Stats      |
+ 	|   Preferences       |	 	 |   Preferences       |
+ 	|   Shutdown          |	 	 |   Shutdown          |
+ 	|                v0.1 |  	 |                v0.1 |
+ 	 ---------------------	 	  ---------------------
+ 	 
+ 	 	 [ A ]				  [ A ]
+ 	 		
+ 	 ---------------------		  ---------------------
+ 	|MODE Client          |		 |CPU LOAD 23 %        |
+ 	|STATUS Active        |		 |CPU TEMP 45 C        |
+ 	|NETWORK Home         |		 |UPTIME 7532 HRS      |
+ 	|IP 192.168.0.103     |		 |SDA1                 |
+ 	|SIGNAL -48 dBm       |		 |  USED 1.2 GB        |
+ 	|                     |		 |  FREE 21.7          |
+ 	| > Configuration     |		 |                     |
+ 	 ---------------------		  ---------------------
+ 	 
+ 	 	 [ A ]
+ 	 
+ 	 ---------------------
+ 	| > Activate AP       |
+ 	|   Scan for Networks |
+ 	|   Forget Network    |
+   	|                     |
+ 	|                     |
+ 	|                     |
+ 	|                     |
+ 	 ---------------------
+
+-----
+
+ 	 ---------------------	 	  ---------------------
+ 	|PeachCloud      21:27|		 |PeachCloud      11:11|
+ 	|                     |		 |                     |
+ 	| > Networking        |		 |   Networking        |
+ 	|   System Stats      |		 | > System Stats      |
+ 	|   Shutdown          |	 	 |   Shutdown          |
+ 	|                     |	 	 |                     |
+ 	|A - Select | B - Help|  	 |A - Select | B - Help|
+ 	 ---------------------	 	  ---------------------
+ 	 
+ 	 	 [ A ]				  [ A ]
+ 	 		
+ 	 ---------------------		  ---------------------
+ 	|MODE Client          |		 |SDA0                 |
+ 	|STATUS Active        |		 |  USED 11.1 GB       |
+ 	|NETWORK Home         |		 |  FREE 6.4 GB        |
+ 	|IP 192.168.0.103     |		 |SDA1                 |
+ 	|SIGNAL -48 dBm       |		 |  USED 1.2 GB        |
+ 	|                     |		 |  FREE 21.7          |
+ 	|A - Config | B - Back|		 |A - Config | B - Back|
+ 	 ---------------------		  ---------------------
+ 	 
+ 	 	 [ A ]
+ 	 
+ 	 ---------------------
+ 	| > Activate AP       |
+ 	|   Scan for Networks |
+ 	|   Forget Network    |
+   	|                     |
+ 	|                     |
+ 	|                     |
+ 	|A - Config | B - Back|
+ 	 ---------------------
+ 	 
+-----
+
+ 	 ---------------------
+ 	|BATTERY 83 %         |
+ 	|CPU TEMP 45 C        |
+ 	|UPTIME 1d 12m 33s    |
+   	|                     |
+ 	|                     |
+ 	|                     |
+ 	|A - Config | B - Back|
+ 	 ---------------------
