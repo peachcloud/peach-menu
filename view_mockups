@@ -1,10 +1,10 @@
  	 ---------------------	 	  ---------------------
  	|PeachCloud      21:27|		 |PeachCloud      11:11|
  	|                     |		 |                     |
- 	| > Networking        |		 |   Networking        |
- 	|   System Stats      |		 | > System Stats      |
- 	|   Preferences       |	 	 |   Preferences       |
- 	|   Shutdown          |	 	 |   Shutdown          |
+ 	|> Networking         |		 |  Networking         |
+ 	|  System Stats       |		 |> System Stats       |
+ 	|  Preferences        |	 	 |  Preferences        |
+ 	|  Shutdown           |	 	 |  Shutdown           |
  	|                v0.1 |  	 |                v0.1 |
  	 ---------------------	 	  ---------------------
  	 
@@ -37,9 +37,9 @@
  	 ---------------------	 	  ---------------------
  	|PeachCloud      21:27|		 |PeachCloud      11:11|
  	|                     |		 |                     |
- 	| > Networking        |		 |   Networking        |
- 	|   System Stats      |		 | > System Stats      |
- 	|   Shutdown          |	 	 |   Shutdown          |
+ 	|> Networking         |		 |  Networking         |
+ 	|  System Stats       |		 |> System Stats       |
+ 	|  Shutdown           |	 	 |  Shutdown           |
  	|                     |	 	 |                     |
  	|A - Select | B - Help|  	 |A - Select | B - Help|
  	 ---------------------	 	  ---------------------
@@ -59,9 +59,9 @@
  	 	 [ A ]
  	 
  	 ---------------------
- 	| > Activate AP       |
- 	|   Scan for Networks |
- 	|   Forget Network    |
+ 	|> Activate AP        |
+ 	|  Scan for Networks  |
+ 	|  Forget Network     |
    	|                     |
  	|                     |
  	|                     |

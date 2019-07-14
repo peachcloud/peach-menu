@@ -3,6 +3,7 @@ extern crate ws;
 
 use std::{process, thread};
 
+use chrono::{DateTime, Local};
 use crossbeam_channel::*;
 
 use crate::error::MenuError;
@@ -26,9 +27,9 @@ pub enum Event {
 /// The states of the state machine.
 pub enum State {
     Home,
-    HomeNet,  // Home with Networking selected
-    HomeDisk, // Home with Disk Usage selected
-    HomeShut, // Home with Shutdown selected
+    HomeNet,   // Home with Networking selected
+    HomeStats, // Home with System Stats selected
+    HomeShut,  // Home with Shutdown selected
     //Welcome,
     //Help,
     Networking,
@@ -98,12 +99,15 @@ impl State {
         match *self {
             State::Home => {
                 info!("State changed to: Home.");
+                let dt: DateTime<Local> = Local::now();
+                let t = format!("{}", dt.time().format("%H:%M"));
                 oled_clear()?;
+                oled_write(96, 0, t, "6x8".to_string())?;
                 oled_write(0, 0, "PeachCloud".to_string(), "6x8".to_string())?;
                 oled_write(0, 18, "> Networking".to_string(), "6x8".to_string())?;
                 oled_write(12, 27, "System Stats".to_string(), "6x8".to_string())?;
                 oled_write(12, 36, "Shutdown".to_string(), "6x8".to_string())?;
-                oled_write(0, 54, "A - Select".to_string(), "6x8".to_string())?;
+                oled_write(100, 54, "v0.1".to_string(), "6x8".to_string())?;
                 oled_flush()?;
             }
             State::HomeNet => {
@@ -160,7 +164,7 @@ impl State {
                     Err(_) => "Not connected".to_string(),
                 };
                 let show_rssi = format!("SIGNAL {}dBm", rssi);
-                let nav = "A - Config | B - Back".to_string();
+                let config = "> Configuration".to_string();
 
                 oled_clear()?;
                 oled_write(0, 0, mode, "6x8".to_string())?;
@@ -168,7 +172,7 @@ impl State {
                 oled_write(0, 18, show_ssid, "6x8".to_string())?;
                 oled_write(0, 27, show_ip, "6x8".to_string())?;
                 oled_write(0, 36, show_rssi, "6x8".to_string())?;
-                oled_write(0, 54, nav, "6x8".to_string())?;
+                oled_write(0, 54, config, "6x8".to_string())?;
                 oled_flush()?;
             }
         }
