@@ -30,8 +30,7 @@ pub enum State {
     HomeNet,   // Home with Networking selected
     HomeStats, // Home with System Stats selected
     HomeShut,  // Home with Shutdown selected
-    //Welcome,
-    //Help,
+    Logo,
     Networking,
 }
 
@@ -45,7 +44,7 @@ pub enum State {
 pub fn state_changer(r: Receiver<u8>) {
     thread::spawn(move || {
         info!("Initializing the state machine.");
-        let mut state = State::Home;
+        let mut state = State::Logo;
         loop {
             // listen for button_code from json-rpc server
             let button_code = r.recv().unwrap_or_else(|err| {
@@ -73,14 +72,15 @@ pub fn state_changer(r: Receiver<u8>) {
     });
 }
 
-// state machine functionality
 impl State {
     /// Determines the next state based on current state and event.
     pub fn next(self, event: Event) -> State {
         match (self, event) {
+            (State::Logo, Event::A) => State::Home,
             (State::Home, Event::Down) => State::HomeStats,
             (State::Home, Event::Up) => State::HomeShut,
             (State::Home, Event::A) => State::Networking,
+            (State::Home, Event::B) => State::Logo,
             (State::HomeNet, Event::Down) => State::HomeStats,
             (State::HomeNet, Event::Up) => State::HomeShut,
             (State::HomeNet, Event::A) => State::Networking,
@@ -131,20 +131,17 @@ impl State {
                 oled_write(0, 36, "> ".to_string(), "6x8".to_string())?;
                 oled_flush()?;
             }
-            /*State::Welcome => {
+            State::Logo => {
+                info!("State changed to: Logo.");
+                let bytes = PEACH_LOGO.to_vec();
+                let width = 64;
+                let height = 64;
+                let x_coord = 32;
+                let y_coord = 0;
                 oled_clear()?;
-                info!("State changed to: Welcome.");
+                oled_draw(bytes, width, height, x_coord, y_coord)?;
                 oled_flush()?;
             }
-            State::Help => {
-                oled_clear()?;
-                info!("State changed to: Help.");
-                // show buttons
-                // [ A ] - Select
-                // [ B ] - Back or Help
-                // arrows - Navigation
-                oled_flush()?;
-            }*/
             State::Networking => {
                 info!("State changed to: Networking.");
                 let mode = "MODE Client".to_string();
@@ -179,3 +176,25 @@ impl State {
         Ok(())
     }
 }
+
+const PEACH_LOGO: [u8; 512] = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 0, 0, 0, 0, 0,
+    0, 3, 248, 14, 0, 0, 7, 0, 0, 15, 252, 63, 128, 0, 31, 192, 0, 63, 254, 127, 192, 0, 63, 224,
+    0, 127, 255, 127, 224, 0, 127, 240, 0, 63, 255, 255, 128, 0, 255, 240, 0, 31, 255, 255, 192,
+    31, 255, 248, 0, 15, 252, 64, 112, 63, 255, 248, 0, 24, 240, 96, 24, 127, 255, 255, 192, 48, 0,
+    48, 12, 127, 255, 255, 224, 96, 0, 24, 12, 255, 255, 255, 240, 64, 0, 8, 6, 255, 255, 255, 248,
+    64, 0, 12, 2, 255, 255, 255, 252, 192, 0, 4, 2, 255, 227, 255, 252, 192, 0, 4, 2, 127, 128,
+    255, 252, 128, 0, 4, 2, 63, 0, 127, 252, 128, 0, 6, 2, 126, 0, 63, 252, 128, 0, 6, 3, 252, 0,
+    63, 248, 128, 0, 6, 6, 0, 0, 1, 240, 192, 0, 6, 12, 0, 0, 0, 192, 192, 0, 6, 8, 0, 0, 0, 96,
+    64, 0, 4, 24, 0, 0, 0, 32, 64, 0, 4, 24, 0, 0, 0, 48, 96, 0, 4, 16, 0, 0, 0, 16, 32, 0, 4, 16,
+    0, 0, 0, 16, 48, 0, 12, 24, 0, 0, 0, 16, 24, 0, 8, 56, 0, 0, 0, 16, 12, 0, 24, 104, 0, 0, 0,
+    48, 7, 0, 0, 204, 0, 0, 0, 96, 1, 128, 3, 134, 0, 0, 0, 192, 0, 240, 6, 3, 128, 0, 1, 128, 0,
+    63, 28, 1, 255, 255, 255, 0, 0, 3, 240, 0, 31, 255, 252, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+];

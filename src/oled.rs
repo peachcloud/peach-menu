@@ -32,6 +32,28 @@ pub fn oled_clear() -> std::result::Result<(), MenuError> {
     Ok(())
 }
 
+pub fn oled_draw(
+    bytes: Vec<u8>,
+    width: u32,
+    height: u32,
+    x_coord: i32,
+    y_coord: i32,
+) -> std::result::Result<String, MenuError> {
+    debug!("Creating HTTP transport for OLED client.");
+    let transport = HttpTransport::new().standalone()?;
+    let http_addr = env::var("PEACH_OLED_SERVER").unwrap_or_else(|_| "127.0.0.1:5112".to_string());
+    let http_server = format!("http://{}", http_addr);
+    debug!("Creating HTTP transport handle on {}.", http_server);
+    let transport_handle = transport.handle(&http_server)?;
+    info!("Creating client for peach_oled service.");
+    let mut client = PeachOledClient::new(transport_handle);
+
+    client.draw(bytes, width, height, x_coord, y_coord).call()?;
+    debug!("Drew to the OLED display.");
+
+    Ok("success".to_string())
+}
+
 pub fn oled_flush() -> std::result::Result<(), MenuError> {
     debug!("Creating HTTP transport for OLED client.");
     let transport = HttpTransport::new().standalone()?;
@@ -72,6 +94,9 @@ pub fn oled_write(
 jsonrpc_client!(pub struct PeachOledClient {
     /// Creates a JSON-RPC request to clear the OLED display.
     pub fn clear(&mut self) -> RpcRequest<String>;
+
+    /// Creates a JSON-RPC request to draw to the OLED display.
+    pub fn draw(&mut self, bytes: Vec<u8>, width: u32, height: u32, x_coord: i32, y_coord: i32) -> RpcRequest<String>;
 
     /// Creates a JSON-RPC request to flush the OLED display.
     pub fn flush(&mut self) -> RpcRequest<String>;
