@@ -173,13 +173,27 @@ impl State {
                 info!("State changed to: Stats.");
                 let c = cpu_stats_percent()?;
                 let c_stats = format!(
-                    "CPU % {} {} {}",
+                    "CPU {} us {} sy {} id",
                     c.user.round(),
                     c.system.round(),
                     c.idle.round()
                 );
+                let m = mem_stats()?;
+                let m_stats = format!(
+                    "MEM {}MB f {}MB u",
+                    (m.free / 1024).to_string(),
+                    (m.used / 1024).to_string()
+                );
+                let l = load_average()?;
+                let l_stats = format!("LOAD {} {} {}", l.one, l.five, l.fifteen);
+                let u = uptime()?;
+                let u_stats = format!("UPTIME {} hrs", u);
+
                 oled_clear()?;
                 oled_write(0, 0, c_stats, "6x8".to_string())?;
+                oled_write(0, 9, m_stats, "6x8".to_string())?;
+                oled_write(0, 18, l_stats, "6x8".to_string())?;
+                oled_write(0, 27, u_stats, "6x8".to_string())?;
                 oled_flush()?;
             }
         }

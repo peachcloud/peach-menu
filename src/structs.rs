@@ -39,3 +39,9 @@ pub struct MemStat {
     pub free: u64,
     pub used: u64,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct Uptime {
+    pub secs: u64,
+    pub nanos: u32,
+}
