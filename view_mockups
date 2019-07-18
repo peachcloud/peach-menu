@@ -11,12 +11,12 @@
  	 	 [ A ]				  [ A ]
  	 		
  	 ---------------------		  ---------------------
- 	|MODE Client          |		 |CPU LOAD 23 %        |
- 	|STATUS Active        |		 |CPU TEMP 45 C        |
- 	|NETWORK Home         |		 |UPTIME 7532 HRS      |
- 	|IP 192.168.0.103     |		 |SDA1                 |
- 	|SIGNAL -48 dBm       |		 |  USED 1.2 GB        |
- 	|                     |		 |  FREE 21.7          |
+ 	|MODE Client          |		 |CPU % 0.4 0.2 99.7   |
+ 	|STATUS Active        |		 |LOAD 0.14 0.28 0.12  |
+ 	|NETWORK Home         |		 |MEM MB 918 355 95    |
+ 	|IP 192.168.0.103     |		 |UPTIME 7532 HR       |
+ 	|SIGNAL -48 dBm       |		 |                     |
+ 	|                     |		 |                     |
  	| > Configuration     |		 |                     |
  	 ---------------------		  ---------------------
  	 
