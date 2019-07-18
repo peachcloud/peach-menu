@@ -27,9 +27,9 @@ pub enum Event {
 /// The states of the state machine.
 pub enum State {
     Home,
-    HomeNet,   // Home with Networking selected
-    HomeStats, // Home with System Stats selected
-    HomeShut,  // Home with Shutdown selected
+    HomeNet,
+    HomeStats,
+    HomeShut,
     Logo,
     Networking,
 }
@@ -46,14 +46,11 @@ pub fn state_changer(r: Receiver<u8>) {
         info!("Initializing the state machine.");
         let mut state = State::Logo;
         loop {
-            // listen for button_code from json-rpc server
             let button_code = r.recv().unwrap_or_else(|err| {
                 error!("Problem receiving button code from server: {}", err);
                 process::exit(1);
             });
-            // match on button_code & pass event to state.next
             let event = match button_code {
-                // button code mappings
                 0 => Event::Center,
                 1 => Event::Left,
                 2 => Event::Right,
@@ -134,12 +131,8 @@ impl State {
             State::Logo => {
                 info!("State changed to: Logo.");
                 let bytes = PEACH_LOGO.to_vec();
-                let width = 64;
-                let height = 64;
-                let x_coord = 32;
-                let y_coord = 0;
                 oled_clear()?;
-                oled_draw(bytes, width, height, x_coord, y_coord)?;
+                oled_draw(bytes, 64, 64, 32, 0)?;
                 oled_flush()?;
             }
             State::Networking => {
