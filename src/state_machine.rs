@@ -47,6 +47,11 @@ pub fn state_changer(r: Receiver<u8>) {
     thread::spawn(move || {
         info!("Initializing the state machine.");
         let mut state = State::Logo;
+        match state.run() {
+            Ok(_) => (),
+            Err(e) => warn!("State machine error: {:?}", e),
+        };
+
         loop {
             let button_code = r.recv().unwrap_or_else(|err| {
                 error!("Problem receiving button code from server: {}", err);
