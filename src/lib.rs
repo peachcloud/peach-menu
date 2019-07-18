@@ -17,6 +17,8 @@ mod error;
 mod network;
 mod oled;
 mod state_machine;
+mod stats;
+mod structs;
 
 use std::env;
 

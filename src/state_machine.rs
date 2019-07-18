@@ -9,6 +9,7 @@ use crossbeam_channel::*;
 use crate::error::MenuError;
 use crate::network::*;
 use crate::oled::*;
+use crate::stats::*;
 
 #[derive(Debug, Clone, Copy)]
 /// The button press events.
@@ -32,6 +33,7 @@ pub enum State {
     HomeShut,
     Logo,
     Networking,
+    Stats,
 }
 
 /// Initializes the state machine, listens for button events and drives
@@ -83,6 +85,8 @@ impl State {
             (State::HomeNet, Event::A) => State::Networking,
             (State::HomeStats, Event::Down) => State::HomeShut,
             (State::HomeStats, Event::Up) => State::HomeNet,
+            (State::HomeStats, Event::A) => State::Stats,
+            (State::Stats, Event::B) => State::Home,
             (State::HomeShut, Event::Down) => State::HomeNet,
             (State::HomeShut, Event::Up) => State::HomeStats,
             (State::Networking, Event::B) => State::Home,
@@ -163,6 +167,19 @@ impl State {
                 oled_write(0, 27, show_ip, "6x8".to_string())?;
                 oled_write(0, 36, show_rssi, "6x8".to_string())?;
                 oled_write(0, 54, config, "6x8".to_string())?;
+                oled_flush()?;
+            }
+            State::Stats => {
+                info!("State changed to: Stats.");
+                let c = cpu_stats_percent()?;
+                let c_stats = format!(
+                    "CPU % {} {} {}",
+                    c.user.round(),
+                    c.system.round(),
+                    c.idle.round()
+                );
+                oled_clear()?;
+                oled_write(0, 0, c_stats, "6x8".to_string())?;
                 oled_flush()?;
             }
         }
