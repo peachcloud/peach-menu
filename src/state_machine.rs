@@ -148,17 +148,17 @@ impl State {
                 info!("State changed to: Networking.");
                 let mode = "MODE Client".to_string();
                 let status = "STATUS Active".to_string();
-                let ip = match network_get_ip("wlan1".to_string()) {
+                let ip = match network_get_ip("wlan0".to_string()) {
                     Ok(ip) => ip,
                     Err(_) => "x.x.x.x".to_string(),
                 };
                 let show_ip = format!("IP {}", ip);
-                let ssid = match network_get_ssid("wlan1".to_string()) {
+                let ssid = match network_get_ssid("wlan0".to_string()) {
                     Ok(ssid) => ssid,
                     Err(_) => "Not connected".to_string(),
                 };
                 let show_ssid = format!("NETWORK {}", ssid);
-                let rssi = match network_get_rssi("wlan1".to_string()) {
+                let rssi = match network_get_rssi("wlan0".to_string()) {
                     Ok(rssi) => rssi,
                     Err(_) => "Not connected".to_string(),
                 };
