@@ -27,12 +27,16 @@ pub enum Event {
 #[derive(Debug, PartialEq)]
 /// The states of the state machine.
 pub enum State {
+    ActivateAp,
+    ActivateClient,
     Home,
     HomeNet,
     HomeStats,
     HomeShut,
     Logo,
-    Networking,
+    Network,
+    NetworkConfAp,
+    NetworkConfClient,
     Stats,
 }
 
@@ -83,18 +87,27 @@ impl State {
             (State::Logo, Event::A) => State::Home,
             (State::Home, Event::Down) => State::HomeStats,
             (State::Home, Event::Up) => State::HomeShut,
-            (State::Home, Event::A) => State::Networking,
+            (State::Home, Event::A) => State::Network,
             (State::Home, Event::B) => State::Logo,
             (State::HomeNet, Event::Down) => State::HomeStats,
             (State::HomeNet, Event::Up) => State::HomeShut,
-            (State::HomeNet, Event::A) => State::Networking,
+            (State::HomeNet, Event::A) => State::Network,
             (State::HomeStats, Event::Down) => State::HomeShut,
             (State::HomeStats, Event::Up) => State::HomeNet,
             (State::HomeStats, Event::A) => State::Stats,
             (State::Stats, Event::B) => State::Home,
             (State::HomeShut, Event::Down) => State::HomeNet,
             (State::HomeShut, Event::Up) => State::HomeStats,
-            (State::Networking, Event::B) => State::Home,
+            (State::Network, Event::A) => State::NetworkConfClient,
+            (State::Network, Event::B) => State::Home,
+            (State::NetworkConfClient, Event::A) => State::ActivateClient,
+            (State::NetworkConfClient, Event::B) => State::Network,
+            (State::NetworkConfClient, Event::Down) => State::NetworkConfAp,
+            (State::NetworkConfClient, Event::Up) => State::NetworkConfAp,
+            (State::NetworkConfAp, Event::A) => State::ActivateAp,
+            (State::NetworkConfAp, Event::B) => State::Network,
+            (State::NetworkConfAp, Event::Down) => State::NetworkConfClient,
+            (State::NetworkConfAp, Event::Up) => State::NetworkConfClient,
             // return current state if combination is unmatched
             (s, _) => s,
         }
@@ -103,6 +116,18 @@ impl State {
     /// Executes state-specific logic for current state.
     pub fn run(&self) -> Result<(), MenuError> {
         match *self {
+            State::ActivateAp => {
+                info!("State changed to: ActivateAp.");
+                network_activate_ap()?;
+                // TODO: display an 'AP activated' pop-up for a few seconds
+                // maybe as an overlay with a box (line) around it
+            }
+            State::ActivateClient => {
+                info!("State changed to: ActivateClient.");
+                network_activate_client()?;
+                // TODO: display an 'Client activated' pop-up for a few seconds
+                // maybe as an overlay with a box (line) around it
+            }
             State::Home => {
                 info!("State changed to: Home.");
                 let dt: DateTime<Local> = Local::now();
@@ -144,8 +169,8 @@ impl State {
                 oled_draw(bytes, 64, 64, 32, 0)?;
                 oled_flush()?;
             }
-            State::Networking => {
-                info!("State changed to: Networking.");
+            State::Network => {
+                info!("State changed to: Network.");
                 let mode = "MODE Client".to_string();
                 let status = "STATUS Active".to_string();
                 let ip = match network_get_ip("wlan0".to_string()) {
@@ -160,7 +185,7 @@ impl State {
                 let show_ssid = format!("NETWORK {}", ssid);
                 let rssi = match network_get_rssi("wlan0".to_string()) {
                     Ok(rssi) => rssi,
-                    Err(_) => "Not connected".to_string(),
+                    Err(_) => "_".to_string(),
                 };
                 let show_rssi = format!("SIGNAL {}dBm", rssi);
                 let config = "> Configuration".to_string();
@@ -172,6 +197,22 @@ impl State {
                 oled_write(0, 27, show_ip, "6x8".to_string())?;
                 oled_write(0, 36, show_rssi, "6x8".to_string())?;
                 oled_write(0, 54, config, "6x8".to_string())?;
+                oled_flush()?;
+            }
+            State::NetworkConfAp => {
+                info!("State changed to: NetworkConfAp.");
+                oled_write(12, 0, "  ".to_string(), "6x8".to_string())?;
+                oled_write(0, 9, "> ".to_string(), "6x8".to_string())?;
+                oled_flush()?;
+            }
+            State::NetworkConfClient => {
+                info!("State changed to: NetworkConfClient.");
+                let client = "> Client mode".to_string();
+                let ap = "Access point mode".to_string();
+
+                oled_clear()?;
+                oled_write(0, 0, client, "6x8".to_string())?;
+                oled_write(12, 9, ap, "6x8".to_string())?;
                 oled_flush()?;
             }
             State::Stats => {
