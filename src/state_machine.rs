@@ -35,6 +35,7 @@ pub enum State {
     HomeShut,
     Logo,
     Network,
+    NetworkConf,
     NetworkConfAp,
     NetworkConfClient,
     Stats,
@@ -98,8 +99,12 @@ impl State {
             (State::Stats, Event::B) => State::Home,
             (State::HomeShut, Event::Down) => State::HomeNet,
             (State::HomeShut, Event::Up) => State::HomeStats,
-            (State::Network, Event::A) => State::NetworkConfClient,
+            (State::Network, Event::A) => State::NetworkConf,
             (State::Network, Event::B) => State::Home,
+            (State::NetworkConf, Event::A) => State::ActivateClient,
+            (State::NetworkConf, Event::B) => State::Network,
+            (State::NetworkConf, Event::Down) => State::NetworkConfAp,
+            (State::NetworkConf, Event::Up) => State::NetworkConfAp,
             (State::NetworkConfClient, Event::A) => State::ActivateClient,
             (State::NetworkConfClient, Event::B) => State::Network,
             (State::NetworkConfClient, Event::Down) => State::NetworkConfAp,
@@ -108,6 +113,8 @@ impl State {
             (State::NetworkConfAp, Event::B) => State::Network,
             (State::NetworkConfAp, Event::Down) => State::NetworkConfClient,
             (State::NetworkConfAp, Event::Up) => State::NetworkConfClient,
+            (State::ActivateAp, Event::B) => State::Network,
+            (State::ActivateClient, Event::B) => State::Network,
             // return current state if combination is unmatched
             (s, _) => s,
         }
@@ -199,20 +206,26 @@ impl State {
                 oled_write(0, 54, config, "6x8".to_string())?;
                 oled_flush()?;
             }
-            State::NetworkConfAp => {
-                info!("State changed to: NetworkConfAp.");
-                oled_write(12, 0, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 9, "> ".to_string(), "6x8".to_string())?;
-                oled_flush()?;
-            }
-            State::NetworkConfClient => {
-                info!("State changed to: NetworkConfClient.");
+            State::NetworkConf => {
+                info!("State changed to: NetworkConf.");
                 let client = "> Client mode".to_string();
                 let ap = "Access point mode".to_string();
 
                 oled_clear()?;
                 oled_write(0, 0, client, "6x8".to_string())?;
                 oled_write(12, 9, ap, "6x8".to_string())?;
+                oled_flush()?;
+            }
+            State::NetworkConfAp => {
+                info!("State changed to: NetworkConfAp.");
+                oled_write(0, 0, "  ".to_string(), "6x8".to_string())?;
+                oled_write(0, 9, "> ".to_string(), "6x8".to_string())?;
+                oled_flush()?;
+            }
+            State::NetworkConfClient => {
+                info!("State changed to: NetworkConfClient.");
+                oled_write(0, 0, "> ".to_string(), "6x8".to_string())?;
+                oled_write(0, 9, "  ".to_string(), "6x8".to_string())?;
                 oled_flush()?;
             }
             State::Stats => {
