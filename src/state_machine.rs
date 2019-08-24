@@ -1,7 +1,7 @@
 extern crate crossbeam_channel;
 extern crate ws;
 
-use std::{process, thread};
+use std::{process, thread, time};
 
 use chrono::{DateTime, Local};
 use crossbeam_channel::*;
@@ -114,7 +114,11 @@ impl State {
             (State::NetworkConfAp, Event::Down) => State::NetworkConfClient,
             (State::NetworkConfAp, Event::Up) => State::NetworkConfClient,
             (State::ActivateAp, Event::B) => State::Network,
+            (State::ActivateAp, Event::Down) => State::NetworkConfClient,
+            (State::ActivateAp, Event::Up) => State::NetworkConfClient,
             (State::ActivateClient, Event::B) => State::Network,
+            (State::ActivateClient, Event::Down) => State::NetworkConfAp,
+            (State::ActivateClient, Event::Up) => State::NetworkConfAp,
             // return current state if combination is unmatched
             (s, _) => s,
         }
@@ -125,15 +129,37 @@ impl State {
         match *self {
             State::ActivateAp => {
                 info!("State changed to: ActivateAp.");
+                oled_clear()?;
+                oled_write(18, 16, "DEPLOYING".to_string(), "6x8".to_string())?;
+                oled_write(18, 27, "ACCESS".to_string(), "6x8".to_string())?;
+                oled_write(18, 38, "POINT...".to_string(), "6x8".to_string())?;
+                oled_flush()?;
                 network_activate_ap()?;
-                // TODO: display an 'AP activated' pop-up for a few seconds
-                // maybe as an overlay with a box (line) around it
+
+                let client = "  Client mode".to_string();
+                let ap = "> Access point mode".to_string();
+
+                oled_clear()?;
+                oled_write(0, 0, client, "6x8".to_string())?;
+                oled_write(0, 9, ap, "6x8".to_string())?;
+                oled_flush()?;
             }
             State::ActivateClient => {
                 info!("State changed to: ActivateClient.");
+                oled_clear()?;
+                oled_write(18, 16, "ACTIVATING".to_string(), "6x8".to_string())?;
+                oled_write(18, 27, "WIRELESS".to_string(), "6x8".to_string())?;
+                oled_write(18, 38, "CONNECTION...".to_string(), "6x8".to_string())?;
+                oled_flush()?;
                 network_activate_client()?;
-                // TODO: display an 'Client activated' pop-up for a few seconds
-                // maybe as an overlay with a box (line) around it
+
+                let client = "> Client mode".to_string();
+                let ap = "Access point mode".to_string();
+
+                oled_clear()?;
+                oled_write(0, 0, client, "6x8".to_string())?;
+                oled_write(12, 9, ap, "6x8".to_string())?;
+                oled_flush()?;
             }
             State::Home => {
                 info!("State changed to: Home.");
