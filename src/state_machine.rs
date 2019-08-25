@@ -1,7 +1,7 @@
 extern crate crossbeam_channel;
 extern crate ws;
 
-use std::{process, thread, time};
+use std::{process, thread};
 
 use chrono::{DateTime, Local};
 use crossbeam_channel::*;
@@ -204,33 +204,62 @@ impl State {
             }
             State::Network => {
                 info!("State changed to: Network.");
-                let mode = "MODE Client".to_string();
-                let status = "STATUS Active".to_string();
-                let ip = match network_get_ip("wlan0".to_string()) {
-                    Ok(ip) => ip,
-                    Err(_) => "x.x.x.x".to_string(),
+                let status = match network_get_state("wlan0".to_string()) {
+                    Ok(state) => state,
+                    Err(_) => "Error".to_string(),
                 };
-                let show_ip = format!("IP {}", ip);
-                let ssid = match network_get_ssid("wlan0".to_string()) {
-                    Ok(ssid) => ssid,
-                    Err(_) => "Not connected".to_string(),
-                };
-                let show_ssid = format!("NETWORK {}", ssid);
-                let rssi = match network_get_rssi("wlan0".to_string()) {
-                    Ok(rssi) => rssi,
-                    Err(_) => "_".to_string(),
-                };
-                let show_rssi = format!("SIGNAL {}dBm", rssi);
-                let config = "> Configuration".to_string();
+                if status == "up" {
+                    let mode = "MODE Client".to_string();
+                    let show_status = format!("STATUS {}", status);
+                    let ip = match network_get_ip("wlan0".to_string()) {
+                        Ok(ip) => ip,
+                        Err(_) => "x.x.x.x".to_string(),
+                    };
+                    let show_ip = format!("IP {}", ip);
+                    let ssid = match network_get_ssid("wlan0".to_string()) {
+                        Ok(ssid) => ssid,
+                        Err(_) => "Not connected".to_string(),
+                    };
+                    let show_ssid = format!("NETWORK {}", ssid);
+                    let rssi = match network_get_rssi("wlan0".to_string()) {
+                        Ok(rssi) => rssi,
+                        Err(_) => "_".to_string(),
+                    };
+                    let show_rssi = format!("SIGNAL {}dBm", rssi);
+                    let config = "> Configuration".to_string();
 
-                oled_clear()?;
-                oled_write(0, 0, mode, "6x8".to_string())?;
-                oled_write(0, 9, status, "6x8".to_string())?;
-                oled_write(0, 18, show_ssid, "6x8".to_string())?;
-                oled_write(0, 27, show_ip, "6x8".to_string())?;
-                oled_write(0, 36, show_rssi, "6x8".to_string())?;
-                oled_write(0, 54, config, "6x8".to_string())?;
-                oled_flush()?;
+                    oled_clear()?;
+                    oled_write(0, 0, mode, "6x8".to_string())?;
+                    oled_write(0, 9, show_status, "6x8".to_string())?;
+                    oled_write(0, 18, show_ssid, "6x8".to_string())?;
+                    oled_write(0, 27, show_ip, "6x8".to_string())?;
+                    oled_write(0, 36, show_rssi, "6x8".to_string())?;
+                    oled_write(0, 54, config, "6x8".to_string())?;
+                    oled_flush()?;
+                } else {
+                    let mode = "MODE Access Point".to_string();
+                    let status = match network_get_state("ap0".to_string()) {
+                        Ok(state) => state,
+                        Err(_) => "Error".to_string(),
+                    };
+                    let show_status = format!("STATUS {}", status);
+                    let ip = match network_get_ip("ap0".to_string()) {
+                        Ok(ip) => ip,
+                        Err(_) => "x.x.x.x".to_string(),
+                    };
+                    let show_ip = format!("IP {}", ip);
+                    let ssid = "peach".to_string();
+                    let show_ssid = format!("NETWORK {}", ssid);
+                    let config = "> Configuration".to_string();
+
+                    oled_clear()?;
+                    oled_write(0, 0, mode, "6x8".to_string())?;
+                    oled_write(0, 9, show_status, "6x8".to_string())?;
+                    oled_write(0, 18, show_ssid, "6x8".to_string())?;
+                    oled_write(0, 27, show_ip, "6x8".to_string())?;
+                    oled_write(0, 54, config, "6x8".to_string())?;
+                    oled_flush()?;
+                }
             }
             State::NetworkConf => {
                 info!("State changed to: NetworkConf.");
