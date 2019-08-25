@@ -41,6 +41,12 @@ pub struct MemStat {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct Traffic {
+    pub received: u64,
+    pub transmitted: u64,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct Uptime {
     pub secs: u64,
     pub nanos: u32,

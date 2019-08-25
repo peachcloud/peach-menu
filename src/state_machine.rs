@@ -354,11 +354,19 @@ impl State {
                 let u = uptime()?;
                 let u_stats = format!("UPTIME {} hrs", u);
 
+                let t = network_get_traffic("wlan0".to_string())?;
+                let rx = (t.received / 1024 / 1024).to_string();
+                let show_rx = format!("DATA RX {}MB", rx);
+                let tx = (t.transmitted / 1024 / 1024).to_string();
+                let show_tx = format!("DATA TX {}MB", tx);
+
                 oled_clear()?;
                 oled_write(0, 0, c_stats, "6x8".to_string())?;
                 oled_write(0, 9, m_stats, "6x8".to_string())?;
                 oled_write(0, 18, l_stats, "6x8".to_string())?;
                 oled_write(0, 27, u_stats, "6x8".to_string())?;
+                oled_write(0, 36, show_rx, "6x8".to_string())?;
+                oled_write(0, 45, show_tx, "6x8".to_string())?;
                 oled_flush()?;
             }
         }
