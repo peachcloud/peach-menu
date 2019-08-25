@@ -70,6 +70,22 @@ pub fn oled_flush() -> std::result::Result<(), MenuError> {
     Ok(())
 }
 
+pub fn oled_power(power: bool) -> std::result::Result<(), MenuError> {
+    debug!("Creating HTTP transport for OLED client.");
+    let transport = HttpTransport::new().standalone()?;
+    let http_addr = env::var("PEACH_OLED_SERVER").unwrap_or_else(|_| "127.0.0.1:5112".to_string());
+    let http_server = format!("http://{}", http_addr);
+    debug!("Creating HTTP transport handle on {}.", http_server);
+    let transport_handle = transport.handle(&http_server)?;
+    info!("Creating client for peach_oled service.");
+    let mut client = PeachOledClient::new(transport_handle);
+
+    client.power(power).call()?;
+    debug!("Toggled the OLED display power.");
+
+    Ok(())
+}
+
 pub fn oled_write(
     x_coord: i32,
     y_coord: i32,
@@ -100,6 +116,9 @@ jsonrpc_client!(pub struct PeachOledClient {
 
     /// Creates a JSON-RPC request to flush the OLED display.
     pub fn flush(&mut self) -> RpcRequest<String>;
+
+    /// Creates a JSON-RPC request to toggle the power of the OLED display.
+    pub fn power(&mut self, power: bool) -> RpcRequest<String>;
 
     /// Creates a JSON-RPC request to write to the OLED display.
     pub fn write(&mut self, x_coord: i32, y_coord: i32, string: String, font_size: String) -> RpcRequest<String>;
