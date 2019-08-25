@@ -1,7 +1,7 @@
 extern crate crossbeam_channel;
 extern crate ws;
 
-use std::{process, thread};
+use std::{process, thread, time};
 
 use chrono::{DateTime, Local};
 use crossbeam_channel::*;
@@ -41,6 +41,7 @@ pub enum State {
     NetworkConfClient,
     PowerOff,
     PowerOn,
+    Shutdown,
     Stats,
 }
 
@@ -109,6 +110,7 @@ impl State {
             (State::PowerOn, Event::A) => State::PowerOff,
             (State::HomeShut, Event::Down) => State::HomeNet,
             (State::HomeShut, Event::Up) => State::HomePower,
+            (State::HomeShut, Event::A) => State::Shutdown,
             (State::Network, Event::A) => State::NetworkConf,
             (State::Network, Event::B) => State::Home,
             (State::NetworkConf, Event::A) => State::ActivateClient,
@@ -313,6 +315,25 @@ impl State {
                 info!("State changed to: PowerOn.");
                 oled_power(true)?;
             }
+            State::Shutdown => {
+                info!("State changed to: Shutdown.");
+                oled_clear()?;
+                oled_write(18, 16, "SHUTTING".to_string(), "6x8".to_string())?;
+                oled_write(18, 27, "DOWN".to_string(), "6x8".to_string())?;
+                oled_write(18, 38, "DEVICE...".to_string(), "6x8".to_string())?;
+                oled_flush()?;
+                
+                let three_secs = time::Duration::from_millis(3000);
+                thread::sleep(three_secs);
+                oled_power(false)?;
+                info!("Shutting down device");
+                process::Command::new("sudo")
+                    .arg("shutdown")
+                    .arg("now")
+                    .output()
+                    .expect("Failed to shutdown");
+            }
+
             State::Stats => {
                 info!("State changed to: Stats.");
                 let c = cpu_stats_percent()?;
