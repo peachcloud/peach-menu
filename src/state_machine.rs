@@ -142,9 +142,9 @@ impl State {
             State::ActivateAp => {
                 info!("State changed to: ActivateAp.");
                 oled_clear()?;
-                oled_write(18, 16, "DEPLOYING".to_string(), "6x8".to_string())?;
-                oled_write(18, 27, "ACCESS".to_string(), "6x8".to_string())?;
-                oled_write(18, 38, "POINT...".to_string(), "6x8".to_string())?;
+                oled_write(27, 16, "DEPLOYING".to_string(), "6x8".to_string())?;
+                oled_write(27, 27, "ACCESS".to_string(), "6x8".to_string())?;
+                oled_write(27, 38, "POINT...".to_string(), "6x8".to_string())?;
                 oled_flush()?;
                 network_activate_ap()?;
 
@@ -159,9 +159,9 @@ impl State {
             State::ActivateClient => {
                 info!("State changed to: ActivateClient.");
                 oled_clear()?;
-                oled_write(18, 16, "ACTIVATING".to_string(), "6x8".to_string())?;
-                oled_write(18, 27, "WIRELESS".to_string(), "6x8".to_string())?;
-                oled_write(18, 38, "CONNECTION...".to_string(), "6x8".to_string())?;
+                oled_write(24, 16, "ACTIVATING".to_string(), "6x8".to_string())?;
+                oled_write(24, 27, "WIRELESS".to_string(), "6x8".to_string())?;
+                oled_write(24, 38, "CONNECTION...".to_string(), "6x8".to_string())?;
                 oled_flush()?;
                 network_activate_client()?;
 
@@ -182,8 +182,8 @@ impl State {
                 oled_write(0, 0, "PeachCloud".to_string(), "6x8".to_string())?;
                 oled_write(0, 18, "> Networking".to_string(), "6x8".to_string())?;
                 oled_write(12, 27, "System Stats".to_string(), "6x8".to_string())?;
-                oled_write(12, 45, "Display Off".to_string(), "6x8".to_string())?;
-                oled_write(12, 54, "Shutdown".to_string(), "6x8".to_string())?;
+                oled_write(12, 36, "Display Off".to_string(), "6x8".to_string())?;
+                oled_write(12, 45, "Shutdown".to_string(), "6x8".to_string())?;
                 oled_write(100, 54, "v0.1".to_string(), "6x8".to_string())?;
                 oled_flush()?;
             }
@@ -191,32 +191,32 @@ impl State {
                 info!("State changed to: HomeNet.");
                 oled_write(0, 18, "> ".to_string(), "6x8".to_string())?;
                 oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
+                oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
                 oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
                 oled_flush()?;
             }
             State::HomeStats => {
                 info!("State changed to: HomeStats.");
                 oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
                 oled_write(0, 27, "> ".to_string(), "6x8".to_string())?;
+                oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
                 oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
                 oled_flush()?;
             }
             State::HomePower => {
                 info!("State changed to: HomePower.");
                 oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
                 oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 45, "> ".to_string(), "6x8".to_string())?;
-                oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
+                oled_write(0, 36, "> ".to_string(), "6x8".to_string())?;
+                oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
                 oled_flush()?;
             }
             State::HomeShut => {
                 info!("State changed to: HomeShut.");
                 oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
                 oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 54, "> ".to_string(), "6x8".to_string())?;
+                oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
+                oled_write(0, 45, "> ".to_string(), "6x8".to_string())?;
                 oled_flush()?;
             }
             State::Logo => {
@@ -318,9 +318,9 @@ impl State {
             State::Shutdown => {
                 info!("State changed to: Shutdown.");
                 oled_clear()?;
-                oled_write(18, 16, "SHUTTING".to_string(), "6x8".to_string())?;
-                oled_write(18, 27, "DOWN".to_string(), "6x8".to_string())?;
-                oled_write(18, 38, "DEVICE...".to_string(), "6x8".to_string())?;
+                oled_write(27, 16, "SHUTTING".to_string(), "6x8".to_string())?;
+                oled_write(27, 27, "DOWN".to_string(), "6x8".to_string())?;
+                oled_write(27, 38, "DEVICE...".to_string(), "6x8".to_string())?;
                 oled_flush()?;
                 
                 let three_secs = time::Duration::from_millis(3000);
