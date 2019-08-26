@@ -336,37 +336,37 @@ impl State {
 
             State::Stats => {
                 info!("State changed to: Stats.");
-                let c = cpu_stats_percent()?;
-                let c_stats = format!(
+                let cpu = cpu_stats_percent()?;
+                let cpu_stats = format!(
                     "CPU {} us {} sy {} id",
-                    c.user.round(),
-                    c.system.round(),
-                    c.idle.round()
+                    cpu.user.round(),
+                    cpu.system.round(),
+                    cpu.idle.round()
                 );
-                let m = mem_stats()?;
-                let m_stats = format!(
+                let mem = mem_stats()?;
+                let mem_stats = format!(
                     "MEM {}MB f {}MB u",
-                    (m.free / 1024).to_string(),
-                    (m.used / 1024).to_string()
+                    (mem.free / 1024).to_string(),
+                    (mem.used / 1024).to_string()
                 );
-                let l = load_average()?;
-                let l_stats = format!("LOAD {} {} {}", l.one, l.five, l.fifteen);
-                let u = uptime()?;
-                let u_stats = format!("UPTIME {} hrs", u);
+                let load = load_average()?;
+                let load_stats = format!("LOAD {} {} {}", load.one, load.five, load.fifteen);
+                let uptime = uptime()?;
+                let uptime_stats = format!("UPTIME {} hrs", uptime);
 
-                let t = network_get_traffic("wlan0".to_string())?;
-                let rx = (t.received / 1024 / 1024).to_string();
-                let show_rx = format!("DATA RX {}MB", rx);
-                let tx = (t.transmitted / 1024 / 1024).to_string();
-                let show_tx = format!("DATA TX {}MB", tx);
+                let traffic = network_get_traffic("wlan0".to_string())?;
+                let rx = (traffic.received / 1024 / 1024).to_string();
+                let rx_stats = format!("DATA RX {}MB", rx);
+                let tx = (traffic.transmitted / 1024 / 1024).to_string();
+                let tx_stats = format!("DATA TX {}MB", tx);
 
                 oled_clear()?;
-                oled_write(0, 0, c_stats, "6x8".to_string())?;
-                oled_write(0, 9, m_stats, "6x8".to_string())?;
-                oled_write(0, 18, l_stats, "6x8".to_string())?;
-                oled_write(0, 27, u_stats, "6x8".to_string())?;
-                oled_write(0, 36, show_rx, "6x8".to_string())?;
-                oled_write(0, 45, show_tx, "6x8".to_string())?;
+                oled_write(0, 0, cpu_stats, "6x8".to_string())?;
+                oled_write(0, 9, mem_stats, "6x8".to_string())?;
+                oled_write(0, 18, load_stats, "6x8".to_string())?;
+                oled_write(0, 27, uptime_stats, "6x8".to_string())?;
+                oled_write(0, 36, rx_stats, "6x8".to_string())?;
+                oled_write(0, 45, tx_stats, "6x8".to_string())?;
                 oled_flush()?;
             }
         }
