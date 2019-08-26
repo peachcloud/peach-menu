@@ -62,11 +62,11 @@ Clone this repo:
 Move into the repo and compile:
 
 `cd peach-menu`  
-`cargo build`
+`cargo build --release`
 
 Run the binary:
 
-`./target/debug/peach-menu`
+`./target/target/peach-menu`
 
 _Note: Will currently panic if `peach_buttons` is not running (connection to ws server fails)._
 
