@@ -3,12 +3,13 @@ extern crate ws;
 
 use std::{process, thread, time};
 
-use chrono::{DateTime, Local};
+//use chrono::{DateTime, Local};
 use crossbeam_channel::*;
 
 use crate::error::MenuError;
 use crate::network::*;
 use crate::oled::*;
+use crate::states::*;
 use crate::stats::*;
 
 #[derive(Debug, Clone, Copy)]
@@ -29,11 +30,11 @@ pub enum Event {
 pub enum State {
     ActivateAp,
     ActivateClient,
-    Home,
-    HomeNet,
-    HomeStats,
-    HomePower,
-    HomeShut,
+    Home(u8),
+    //HomeNet,
+    //HomeStats,
+    //HomePower,
+    //HomeShut,
     Logo,
     Network,
     NetworkConf,
@@ -44,6 +45,10 @@ pub enum State {
     Shutdown,
     Stats,
 }
+
+//#[derive(Debug, PartialEq)]
+///// The states of the Home view.
+//pub enum Home {
 
 /// Initializes the state machine, listens for button events and drives
 /// corresponding state changes.
@@ -85,34 +90,36 @@ pub fn state_changer(r: Receiver<u8>) {
     });
 }
 
+// 0 - Home
+//   1 - Networking
+//   2 - System Stats
+//   3 - Display Off
+//   4 - Shutdown
+
 impl State {
     /// Determines the next state based on current state and event.
     pub fn next(self, event: Event) -> State {
         match (self, event) {
-            (State::Logo, Event::A) => State::Home,
-            (State::Home, Event::Down) => State::HomeStats,
-            (State::Home, Event::Up) => State::HomeShut,
-            (State::Home, Event::A) => State::Network,
-            (State::Home, Event::B) => State::Logo,
-            (State::HomeNet, Event::Down) => State::HomeStats,
-            (State::HomeNet, Event::Up) => State::HomeShut,
-            (State::HomeNet, Event::A) => State::Network,
-            (State::HomeStats, Event::Down) => State::HomePower,
-            (State::HomeStats, Event::Up) => State::HomeNet,
-            (State::HomeStats, Event::A) => State::Stats,
-            (State::Stats, Event::B) => State::Home,
-            (State::HomePower, Event::Down) => State::HomeShut,
-            (State::HomePower, Event::Up) => State::HomeStats,
-            (State::HomePower, Event::A) => State::PowerOff,
-            (State::PowerOff, _) => State::PowerOn,
-            (State::PowerOn, Event::Down) => State::HomeShut,
-            (State::PowerOn, Event::Up) => State::HomeStats,
-            (State::PowerOn, Event::A) => State::PowerOff,
-            (State::HomeShut, Event::Down) => State::HomeNet,
-            (State::HomeShut, Event::Up) => State::HomePower,
-            (State::HomeShut, Event::A) => State::Shutdown,
+            (State::Logo, Event::A) => State::Home(0),
+            (State::Home(0), Event::Down) => State::Home(1),
+            (State::Home(0), Event::Up) => State::Home(4),
+            (State::Home(0), Event::A) => State::Network,
+            (State::Home(_), Event::B) => State::Logo,
+            (State::Home(1), Event::Down) => State::Home(2),
+            (State::Home(1), Event::Up) => State::Home(4),
+            (State::Home(1), Event::A) => State::Network,
+            (State::Home(2), Event::Down) => State::Home(3),
+            (State::Home(2), Event::Up) => State::Home(1),
+            (State::Home(2), Event::A) => State::Stats,
+            (State::Home(3), Event::Down) => State::Home(4),
+            (State::Home(3), Event::Up) => State::Home(2),
+            (State::Home(3), Event::A) => State::PowerOff,
+            (State::Home(4), Event::Down) => State::Home(1),
+            (State::Home(4), Event::Up) => State::Home(3),
+            (State::Home(4), Event::A) => State::Shutdown,
+            (State::Home(_), _) => State:: Home(0),
             (State::Network, Event::A) => State::NetworkConf,
-            (State::Network, Event::B) => State::Home,
+            (State::Network, Event::B) => State::Home(0),
             (State::NetworkConf, Event::A) => State::ActivateClient,
             (State::NetworkConf, Event::B) => State::Network,
             (State::NetworkConf, Event::Down) => State::NetworkConfAp,
@@ -125,6 +132,8 @@ impl State {
             (State::NetworkConfAp, Event::B) => State::Network,
             (State::NetworkConfAp, Event::Down) => State::NetworkConfClient,
             (State::NetworkConfAp, Event::Up) => State::NetworkConfClient,
+            (State::PowerOff, _) => State::PowerOn,
+            (State::Stats, Event::B) => State::Home(0),
             (State::ActivateAp, Event::B) => State::Network,
             (State::ActivateAp, Event::Down) => State::NetworkConfClient,
             (State::ActivateAp, Event::Up) => State::NetworkConfClient,
@@ -173,51 +182,34 @@ impl State {
                 oled_write(12, 9, ap, "6x8".to_string())?;
                 oled_flush()?;
             }
-            State::Home => {
-                info!("State changed to: Home.");
-                let dt: DateTime<Local> = Local::now();
-                let t = format!("{}", dt.time().format("%H:%M"));
-                oled_clear()?;
-                oled_write(96, 0, t, "6x8".to_string())?;
-                oled_write(0, 0, "PeachCloud".to_string(), "6x8".to_string())?;
-                oled_write(0, 18, "> Networking".to_string(), "6x8".to_string())?;
-                oled_write(12, 27, "System Stats".to_string(), "6x8".to_string())?;
-                oled_write(12, 36, "Display Off".to_string(), "6x8".to_string())?;
-                oled_write(12, 45, "Shutdown".to_string(), "6x8".to_string())?;
-                oled_write(100, 54, "v0.1".to_string(), "6x8".to_string())?;
-                oled_flush()?;
+            // home: root
+            State::Home(0) => {
+                info!("State changed to: Home 0.");
+                state_home(0)?;
             }
-            State::HomeNet => {
-                info!("State changed to: HomeNet.");
-                oled_write(0, 18, "> ".to_string(), "6x8".to_string())?;
-                oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-                oled_flush()?;
+            // home: networking
+            State::Home(1) => {
+                info!("State changed to: Home 1.");
+                state_home(1)?;
             }
-            State::HomeStats => {
-                info!("State changed to: HomeStats.");
-                oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 27, "> ".to_string(), "6x8".to_string())?;
-                oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-                oled_flush()?;
+            // home: system stats
+            State::Home(2) => {
+                info!("State changed to: Home 2.");
+                state_home(2)?;
             }
-            State::HomePower => {
-                info!("State changed to: HomePower.");
-                oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 36, "> ".to_string(), "6x8".to_string())?;
-                oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-                oled_flush()?;
+            // home: display off
+            State::Home(3) => {
+                info!("State changed to: Home 3.");
+                state_home(3)?;
             }
-            State::HomeShut => {
-                info!("State changed to: HomeShut.");
-                oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
-                oled_write(0, 45, "> ".to_string(), "6x8".to_string())?;
-                oled_flush()?;
+            // home: shutdown
+            State::Home(4) => {
+                info!("State changed to: Home 4.");
+                state_home(4)?;
+            }
+            // home: unknown
+            State::Home(_) => {
+                info!("State changed to: Home _.");
             }
             State::Logo => {
                 info!("State changed to: Logo.");

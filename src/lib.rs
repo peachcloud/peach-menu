@@ -16,6 +16,7 @@ mod buttons;
 mod error;
 mod network;
 mod oled;
+mod states;
 mod state_machine;
 mod stats;
 mod structs;
