@@ -96,7 +96,7 @@ impl State {
         match (self, event) {
             (State::Logo, Event::A) => State::Home(0),
             (State::Home(_), Event::B) => State::Logo,
-            (State::Home(0), Event::Down) => State::Home(1),
+            (State::Home(0), Event::Down) => State::Home(2),
             (State::Home(0), Event::Up) => State::Home(4),
             (State::Home(0), Event::A) => State::Network,
             (State::Home(1), Event::Down) => State::Home(2),
@@ -132,6 +132,9 @@ impl State {
             (State::NetworkMode(0), Event::Down) => State::NetworkConf(2),
             (State::NetworkMode(0), Event::Up) => State::NetworkConf(2),
             (State::OledPower(0), _) => State::OledPower(1),
+            (State::OledPower(1), Event::Down) => State::Home(4),
+            (State::OledPower(1), Event::Up) => State::Home(2),
+            (State::OledPower(1), Event::A) => State::OledPower(0),
             (State::Stats, Event::B) => State::Home(0),
             // return current state if combination is unmatched
             (s, _) => s,

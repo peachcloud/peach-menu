@@ -187,9 +187,6 @@ pub fn state_network() -> Result<(), MenuError> {
             oled_write(0, 27, show_ip, "6x8".to_string())?;
             oled_write(0, 54, config, "6x8".to_string())?;
             oled_flush()?;
-            oled_write(0, 0, "> ".to_string(), "6x8".to_string())?;
-            oled_write(0, 9, "  ".to_string(), "6x8".to_string())?;
-            oled_flush()?;
 
             Ok(())
         },
