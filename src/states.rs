@@ -15,9 +15,9 @@ pub fn state_network_mode(mode: u8) -> Result<(), MenuError> {
             oled_write(24, 27, "WIRELESS".to_string(), "6x8".to_string())?;
             oled_write(24, 38, "CONNECTION...".to_string(), "6x8".to_string())?;
             oled_flush()?;
-            
+
             network_activate_client()?;
-            
+
             let client = "> Client mode".to_string();
             let ap = "  Access point mode".to_string();
             oled_clear()?;
@@ -26,16 +26,16 @@ pub fn state_network_mode(mode: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         1 => {
             oled_clear()?;
             oled_write(27, 16, "DEPLOYING".to_string(), "6x8".to_string())?;
             oled_write(27, 27, "ACCESS".to_string(), "6x8".to_string())?;
             oled_write(27, 38, "POINT...".to_string(), "6x8".to_string())?;
             oled_flush()?;
-            
+
             network_activate_ap()?;
-            
+
             let client = "  Client mode".to_string();
             let ap = "> Access point mode".to_string();
             oled_clear()?;
@@ -44,7 +44,7 @@ pub fn state_network_mode(mode: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         _ => Ok(()),
     }
 }
@@ -68,7 +68,7 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // Home: networking
         1 => {
             oled_write(0, 18, "> ".to_string(), "6x8".to_string())?;
@@ -78,7 +78,7 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // Home: system stats
         2 => {
             oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
@@ -88,7 +88,7 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // Home: display off
         3 => {
             oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
@@ -98,7 +98,7 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // Home: shutdown
         4 => {
             oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
@@ -108,7 +108,7 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // outlier
         _ => Ok(()),
     }
@@ -150,7 +150,7 @@ pub fn state_network() -> Result<(), MenuError> {
             };
             let show_rssi = format!("SIGNAL {}dBm", rssi);
             let config = "> Configuration".to_string();
-                    
+
             oled_clear()?;
             oled_write(0, 0, mode, "6x8".to_string())?;
             oled_write(0, 9, show_status, "6x8".to_string())?;
@@ -161,7 +161,7 @@ pub fn state_network() -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // wlan0 is down
         // Network: AP mode
         "down" => {
@@ -189,7 +189,7 @@ pub fn state_network() -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // outlier
         // TODO: account for iface states other than 'up' and 'down'
         _ => Ok(()),
@@ -209,7 +209,7 @@ pub fn state_network_conf(selected: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // NetworkConf: client
         1 => {
             oled_write(0, 0, "> ".to_string(), "6x8".to_string())?;
@@ -217,7 +217,7 @@ pub fn state_network_conf(selected: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // NetworkConf: ap
         2 => {
             oled_write(0, 0, "  ".to_string(), "6x8".to_string())?;
@@ -225,7 +225,7 @@ pub fn state_network_conf(selected: u8) -> Result<(), MenuError> {
             oled_flush()?;
 
             Ok(())
-        },
+        }
         // outlier
         _ => Ok(()),
     }

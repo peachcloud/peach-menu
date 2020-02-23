@@ -202,7 +202,7 @@ impl State {
             }
             State::NetworkMode(1) => {
                 info!("State changed to: NetworkMode 1.");
-                state_network_mode(1)?;    
+                state_network_mode(1)?;
             }
             State::NetworkMode(_) => {
                 info!("State changed to: NetworkMode _.");
