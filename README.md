@@ -21,22 +21,14 @@ _Note: This module is a work-in-progress._
 ### States
 
 ```
-ActivateAp,  
-ActivateClient,  
-Home,  
-HomeNet,  
-HomePower,
-HomeStats,  
-HomeShut,  
-Logo,  
-Network,  
-NetworkConf,  
-NetworkConfAp,  
-NetworkConfClient,  
-PowerOn,
-PowerOff,
+Home(u8),
+Logo,
+Network,
+NetworkConf(u8),
+NetworkMode(u8),
+OledPower(u8),
 Shutdown,
-Stats,  
+Stats,
 ```
 
 ### Environment
