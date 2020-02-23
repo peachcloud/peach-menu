@@ -47,19 +47,15 @@ pub fn run() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     debug!("Creating unbounded channel for message passing.");
     let (s, r) = unbounded();
-    // clone channel so receiver can be moved into `state_changer`
-    //let (mut s1, r1) = (s.clone(), r.clone());
 
     debug!("Spawning state-machine thread.");
     state_changer(r);
-
-    let s2 = &mut s.clone();
 
     let ws_addr = env::var("PEACH_BUTTONS_SERVER").unwrap_or_else(|_| "127.0.0.1:5111".to_string());
 
     let ws_server = format!("ws://{}", ws_addr);
 
-    connect(ws_server, |out| Client { out, s: s2 })?;
+    connect(ws_server, |out| Client { out, s: &s })?;
 
     Ok(())
 }
