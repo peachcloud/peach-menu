@@ -1,0 +1,12 @@
+[Unit]
+Description=Menu for monitoring and interacting with the PeachCloud device.
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/peach-menu
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

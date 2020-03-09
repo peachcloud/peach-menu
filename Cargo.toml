@@ -10,6 +10,20 @@ readme = "README.md"
 license = "AGPL-3.0-only"
 publish = false
 
+[package.metadata.deb]
+depends = "$auto"
+extended-description = """\
+Menu for monitoring and interacting with the PeachCloud device. \
+A state machine which listens for GPIO events (button presses) by \
+subscribing to peach-buttons over websockets and makes JSON-RPC calls \
+to relevant PeachCloud microservices."""
+maintainer-scripts="debian"
+assets = [
+    ["target/release/peach-menu", "usr/bin/", "755"],
+    ["debian/peach-menu.service", "/lib/systemd/system/peach-menu.service", "644"],
+    ["README.md", "usr/share/doc/peach-menu/README", "644"],
+]
+
 [badges]
 travis-ci = { repository = "peachcloud/peach-menu", branch = "master" }
 maintenance = { status = "actively-developed" }
