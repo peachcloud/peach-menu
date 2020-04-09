@@ -63,7 +63,8 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_write(0, 18, "> Networking".to_string(), "6x8".to_string())?;
             oled_write(0, 27, "  System Stats".to_string(), "6x8".to_string())?;
             oled_write(0, 36, "  Display Off".to_string(), "6x8".to_string())?;
-            oled_write(0, 45, "  Shutdown".to_string(), "6x8".to_string())?;
+            oled_write(0, 45, "  Reboot".to_string(), "6x8".to_string())?;
+            oled_write(0, 54, "  Shutdown".to_string(), "6x8".to_string())?;
             oled_write(100, 54, "v0.1".to_string(), "6x8".to_string())?;
             oled_flush()?;
 
@@ -75,6 +76,7 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
             oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
             oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
             oled_flush()?;
 
             Ok(())
@@ -85,6 +87,7 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_write(0, 27, "> ".to_string(), "6x8".to_string())?;
             oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
             oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
             oled_flush()?;
 
             Ok(())
@@ -95,16 +98,29 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
             oled_write(0, 36, "> ".to_string(), "6x8".to_string())?;
             oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
             oled_flush()?;
 
             Ok(())
         }
-        // Home: shutdown
+        // Home: reboot
         4 => {
             oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
             oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
             oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
             oled_write(0, 45, "> ".to_string(), "6x8".to_string())?;
+            oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
+            oled_flush()?;
+
+            Ok(())
+        }
+        // Home: shutdown
+        5 => {
+            oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 54, "> ".to_string(), "6x8".to_string())?;
             oled_flush()?;
 
             Ok(())
@@ -229,6 +245,27 @@ pub fn state_network_conf(selected: u8) -> Result<(), MenuError> {
         // outlier
         _ => Ok(()),
     }
+}
+
+pub fn state_reboot() -> Result<(), MenuError> {
+    oled_clear()?;
+    oled_write(27, 16, "REBOOTING".to_string(), "6x8".to_string())?;
+    oled_write(27, 27, "DEVICE...".to_string(), "6x8".to_string())?;
+    oled_flush()?;
+
+    let three_secs = time::Duration::from_millis(3000);
+    thread::sleep(three_secs);
+
+    oled_power(false)?;
+    info!("Rebooting device");
+    process::Command::new("sudo")
+        .arg("shutdown")
+        .arg("-r")
+        .arg("now")
+        .output()
+        .expect("Failed to reboot");
+
+    Ok(())
 }
 
 pub fn state_shutdown() -> Result<(), MenuError> {

@@ -31,6 +31,7 @@ pub enum State {
     NetworkConf(u8),
     NetworkMode(u8),
     OledPower(u8),
+    Reboot,
     Shutdown,
     Stats,
 }
@@ -79,7 +80,8 @@ pub fn state_changer(r: Receiver<u8>) {
 //   1 - Networking
 //   2 - System Stats
 //   3 - Display Off
-//   4 - Shutdown
+//   4 - Reboot
+//   5 - Shutdown
 // 0 - NetworkConf
 //   1 - Client Mode
 //   2 - Access Point
@@ -108,9 +110,12 @@ impl State {
             (State::Home(3), Event::Down) => State::Home(4),
             (State::Home(3), Event::Up) => State::Home(2),
             (State::Home(3), Event::A) => State::OledPower(0),
-            (State::Home(4), Event::Down) => State::Home(1),
+            (State::Home(4), Event::Down) => State::Home(5),
             (State::Home(4), Event::Up) => State::Home(3),
-            (State::Home(4), Event::A) => State::Shutdown,
+            (State::Home(4), Event::A) => State::Reboot,
+            (State::Home(5), Event::Down) => State::Home(1),
+            (State::Home(5), Event::Up) => State::Home(4),
+            (State::Home(5), Event::A) => State::Shutdown,
             (State::Network, Event::A) => State::NetworkConf(0),
             (State::Network, Event::B) => State::Home(0),
             (State::NetworkConf(0), Event::A) => State::NetworkMode(0),
@@ -164,10 +169,15 @@ impl State {
                 info!("State changed to: Home 3.");
                 state_home(3)?;
             }
-            // home: shutdown
+            // home: reboot
             State::Home(4) => {
                 info!("State changed to: Home 4.");
                 state_home(4)?;
+            }
+            // home: shutdown
+            State::Home(5) => {
+                info!("State changed to: Home 5.");
+                state_home(5)?;
             }
             // home: unknown
             State::Home(_) => {
@@ -217,6 +227,10 @@ impl State {
             }
             State::OledPower(_) => {
                 info!("State changed to: OledPower _.");
+            }
+            State::Reboot => {
+                info!("State changed to: Reboot.");
+                state_reboot()?;
             }
             State::Shutdown => {
                 info!("State changed to: Shutdown.");
