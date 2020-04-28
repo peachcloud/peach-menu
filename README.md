@@ -27,6 +27,7 @@ Network,
 NetworkConf(u8),
 NetworkMode(u8),
 OledPower(u8),
+Reboot,
 Shutdown,
 Stats,
 ```
