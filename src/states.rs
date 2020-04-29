@@ -306,7 +306,7 @@ pub fn state_stats() -> Result<(), MenuError> {
     let load = load_average()?;
     let load_stats = format!("LOAD {} {} {}", load.one, load.five, load.fifteen);
     let uptime = uptime()?;
-    let uptime_stats = format!("UPTIME {} hrs", uptime);
+    let uptime_stats = format!("UPTIME {} mins", uptime);
     let traffic = network_get_traffic("wlan0".to_string())?;
     let rx = (traffic.received / 1024 / 1024).to_string();
     let rx_stats = format!("DATA RX {}MB", rx);
