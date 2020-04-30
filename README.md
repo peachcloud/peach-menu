@@ -63,6 +63,38 @@ Run the binary:
 
 _Note: Will currently panic if `peach_buttons` is not running (connection to ws server fails)._
 
+### Debian Packaging
+
+A `systemd` service file and Debian maintainer scripts are included in the `debian` directory, allowing `peach-menu` to be easily bundled as a Debian package (`.deb`). The `cargo-deb` [crate](https://crates.io/crates/cargo-deb) can be used to achieve this.
+
+Install `cargo-deb`:
+
+`cargo install cargo-deb`
+
+Move into the repo:
+
+`cd peach-menu`
+
+Build the package:
+
+`cargo deb`
+
+The output will be written to `target/debian/peach-menu_0.1.0_arm64.deb` (or similar).
+
+Install the package as follows:
+
+`sudo dpkg -i target/debian/peach-menu_0.1.0_arm64.deb`
+
+The service will be automatically enabled and started.
+
+Uninstall the service:
+
+`sudo apt-get remove peach-menu`
+
+Remove configuration files (not removed with `apt-get remove`):
+
+`sudo apt-get purge peach-menu`
+
 ### Resources
 
 This work was made much, much easier by the awesome blog post titled [Pretty State Machine Patterns in Rust](https://hoverbear.org/2016/10/12/rust-state-machine-pattern/) by [hoverbear](https://hoverbear.org/about/). Thanks hoverbear!
