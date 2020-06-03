@@ -25,9 +25,6 @@ use std::env;
 
 use crossbeam_channel::unbounded;
 
-#[allow(unused_imports)]
-use jsonrpc_test as test;
-
 use ws::connect;
 
 use crate::buttons::*;
@@ -58,23 +55,4 @@ pub fn run() -> std::result::Result<(), Box<dyn std::error::Error>> {
     connect(ws_server, |out| Client { out, s: &s })?;
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // test to ensure correct success response
-    #[test]
-    fn rpc_success() {
-        let rpc = {
-            let mut io = IoHandler::new();
-            io.add_method("rpc_success_response", |_| {
-                Ok(Value::String("success".into()))
-            });
-            test::Rpc::from(io)
-        };
-
-        assert_eq!(rpc.request("rpc_success_response", &()), r#""success""#);
-    }
 }

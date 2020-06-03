@@ -140,7 +140,7 @@ pub fn state_logo() -> Result<(), MenuError> {
 }
 
 pub fn state_network() -> Result<(), MenuError> {
-    let status = match network_get_state("wlan0".to_string()) {
+    let status = match network_state("wlan0".to_string()) {
         Ok(state) => state,
         Err(_) => "Error".to_string(),
     };
@@ -150,17 +150,17 @@ pub fn state_network() -> Result<(), MenuError> {
         "up" => {
             let mode = "MODE Client".to_string();
             let show_status = format!("STATUS {}", status);
-            let ip = match network_get_ip("wlan0".to_string()) {
+            let ip = match network_ip("wlan0".to_string()) {
                 Ok(ip) => ip,
                 Err(_) => "x.x.x.x".to_string(),
             };
             let show_ip = format!("IP {}", ip);
-            let ssid = match network_get_ssid("wlan0".to_string()) {
+            let ssid = match network_ssid("wlan0".to_string()) {
                 Ok(ssid) => ssid,
                 Err(_) => "Not connected".to_string(),
             };
             let show_ssid = format!("NETWORK {}", ssid);
-            let rssi = match network_get_rssi("wlan0".to_string()) {
+            let rssi = match network_rssi("wlan0".to_string()) {
                 Ok(rssi) => rssi,
                 Err(_) => "_".to_string(),
             };
@@ -182,12 +182,12 @@ pub fn state_network() -> Result<(), MenuError> {
         // Network: AP mode
         "down" => {
             let mode = "MODE Access Point".to_string();
-            let status = match network_get_state("ap0".to_string()) {
+            let status = match network_state("ap0".to_string()) {
                 Ok(state) => state,
                 Err(_) => "Error".to_string(),
             };
             let show_status = format!("STATUS {}", status);
-            let ip = match network_get_ip("ap0".to_string()) {
+            let ip = match network_ip("ap0".to_string()) {
                 Ok(ip) => ip,
                 Err(_) => "x.x.x.x".to_string(),
             };
@@ -307,7 +307,7 @@ pub fn state_stats() -> Result<(), MenuError> {
     let load_stats = format!("LOAD {} {} {}", load.one, load.five, load.fifteen);
     let uptime = uptime()?;
     let uptime_stats = format!("UPTIME {} mins", uptime);
-    let traffic = network_get_traffic("wlan0".to_string())?;
+    let traffic = network_traffic("wlan0".to_string())?;
     let rx = (traffic.received / 1024 / 1024).to_string();
     let rx_stats = format!("DATA RX {}MB", rx);
     let tx = (traffic.transmitted / 1024 / 1024).to_string();
