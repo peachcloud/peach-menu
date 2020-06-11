@@ -11,36 +11,32 @@ pub fn state_network_mode(mode: u8) -> Result<(), MenuError> {
     match mode {
         0 => {
             oled_clear()?;
-            oled_write(24, 16, "ACTIVATING".to_string(), "6x8".to_string())?;
-            oled_write(24, 27, "WIRELESS".to_string(), "6x8".to_string())?;
-            oled_write(24, 38, "CONNECTION...".to_string(), "6x8".to_string())?;
+            oled_write(24, 16, "ACTIVATING", "6x8")?;
+            oled_write(24, 27, "WIRELESS", "6x8")?;
+            oled_write(24, 38, "CONNECTION...", "6x8")?;
             oled_flush()?;
 
             network_activate_client()?;
 
-            let client = "> Client mode".to_string();
-            let ap = "  Access point mode".to_string();
             oled_clear()?;
-            oled_write(0, 0, client, "6x8".to_string())?;
-            oled_write(0, 9, ap, "6x8".to_string())?;
+            oled_write(0, 0, "> Client mode", "6x8")?;
+            oled_write(0, 9, "  Access point mode", "6x8")?;
             oled_flush()?;
 
             Ok(())
         }
         1 => {
             oled_clear()?;
-            oled_write(27, 16, "DEPLOYING".to_string(), "6x8".to_string())?;
-            oled_write(27, 27, "ACCESS".to_string(), "6x8".to_string())?;
-            oled_write(27, 38, "POINT...".to_string(), "6x8".to_string())?;
+            oled_write(27, 16, "DEPLOYING", "6x8")?;
+            oled_write(27, 27, "ACCESS", "6x8")?;
+            oled_write(27, 38, "POINT...", "6x8")?;
             oled_flush()?;
 
             network_activate_ap()?;
 
-            let client = "  Client mode".to_string();
-            let ap = "> Access point mode".to_string();
             oled_clear()?;
-            oled_write(0, 0, client, "6x8".to_string())?;
-            oled_write(0, 9, ap, "6x8".to_string())?;
+            oled_write(0, 0, "  Client mode", "6x8")?;
+            oled_write(0, 9, "> Access point mode", "6x8")?;
             oled_flush()?;
 
             Ok(())
@@ -58,69 +54,69 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             let t = format!("{}", dt.time().format("%H:%M"));
 
             oled_clear()?;
-            oled_write(96, 0, t, "6x8".to_string())?;
-            oled_write(0, 0, "PeachCloud".to_string(), "6x8".to_string())?;
-            oled_write(0, 18, "> Networking".to_string(), "6x8".to_string())?;
-            oled_write(0, 27, "  System Stats".to_string(), "6x8".to_string())?;
-            oled_write(0, 36, "  Display Off".to_string(), "6x8".to_string())?;
-            oled_write(0, 45, "  Reboot".to_string(), "6x8".to_string())?;
-            oled_write(0, 54, "  Shutdown".to_string(), "6x8".to_string())?;
-            oled_write(100, 54, "v0.2".to_string(), "6x8".to_string())?;
+            oled_write(96, 0, &t, "6x8")?;
+            oled_write(0, 0, "PeachCloud", "6x8")?;
+            oled_write(0, 18, "> Networking", "6x8")?;
+            oled_write(0, 27, "  System Stats", "6x8")?;
+            oled_write(0, 36, "  Display Off", "6x8")?;
+            oled_write(0, 45, "  Reboot", "6x8")?;
+            oled_write(0, 54, "  Shutdown", "6x8")?;
+            oled_write(100, 54, "v0.2", "6x8")?;
             oled_flush()?;
 
             Ok(())
         }
         // Home: networking
         1 => {
-            oled_write(0, 18, "> ".to_string(), "6x8".to_string())?;
-            oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 18, "> ", "6x8")?;
+            oled_write(0, 27, "  ", "6x8")?;
+            oled_write(0, 36, "  ", "6x8")?;
+            oled_write(0, 45, "  ", "6x8")?;
+            oled_write(0, 54, "  ", "6x8")?;
             oled_flush()?;
 
             Ok(())
         }
         // Home: system stats
         2 => {
-            oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 27, "> ".to_string(), "6x8".to_string())?;
-            oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 18, "  ", "6x8")?;
+            oled_write(0, 27, "> ", "6x8")?;
+            oled_write(0, 36, "  ", "6x8")?;
+            oled_write(0, 45, "  ", "6x8")?;
+            oled_write(0, 54, "  ", "6x8")?;
             oled_flush()?;
 
             Ok(())
         }
         // Home: display off
         3 => {
-            oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 36, "> ".to_string(), "6x8".to_string())?;
-            oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 18, "  ", "6x8")?;
+            oled_write(0, 27, "  ", "6x8")?;
+            oled_write(0, 36, "> ", "6x8")?;
+            oled_write(0, 45, "  ", "6x8")?;
+            oled_write(0, 54, "  ", "6x8")?;
             oled_flush()?;
 
             Ok(())
         }
         // Home: reboot
         4 => {
-            oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 45, "> ".to_string(), "6x8".to_string())?;
-            oled_write(0, 54, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 18, "  ", "6x8")?;
+            oled_write(0, 27, "  ", "6x8")?;
+            oled_write(0, 36, "  ", "6x8")?;
+            oled_write(0, 45, "> ", "6x8")?;
+            oled_write(0, 54, "  ", "6x8")?;
             oled_flush()?;
 
             Ok(())
         }
         // Home: shutdown
         5 => {
-            oled_write(0, 18, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 27, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 36, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 45, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 54, "> ".to_string(), "6x8".to_string())?;
+            oled_write(0, 18, "  ", "6x8")?;
+            oled_write(0, 27, "  ", "6x8")?;
+            oled_write(0, 36, "  ", "6x8")?;
+            oled_write(0, 45, "  ", "6x8")?;
+            oled_write(0, 54, "> ", "6x8")?;
             oled_flush()?;
 
             Ok(())
@@ -140,7 +136,7 @@ pub fn state_logo() -> Result<(), MenuError> {
 }
 
 pub fn state_network() -> Result<(), MenuError> {
-    let status = match network_state("wlan0".to_string()) {
+    let status = match network_state("wlan0") {
         Ok(state) => state,
         Err(_) => "Error".to_string(),
     };
@@ -148,32 +144,31 @@ pub fn state_network() -> Result<(), MenuError> {
         // wlan0 is up
         // Network: Client mode
         "up" => {
-            let mode = "MODE Client".to_string();
             let show_status = format!("STATUS {}", status);
-            let ip = match network_ip("wlan0".to_string()) {
+            let ip = match network_ip("wlan0") {
                 Ok(ip) => ip,
                 Err(_) => "x.x.x.x".to_string(),
             };
             let show_ip = format!("IP {}", ip);
-            let ssid = match network_ssid("wlan0".to_string()) {
+            let ssid = match network_ssid("wlan0") {
                 Ok(ssid) => ssid,
                 Err(_) => "Not connected".to_string(),
             };
             let show_ssid = format!("NETWORK {}", ssid);
-            let rssi = match network_rssi("wlan0".to_string()) {
+            let rssi = match network_rssi("wlan0") {
                 Ok(rssi) => rssi,
                 Err(_) => "_".to_string(),
             };
             let show_rssi = format!("SIGNAL {}dBm", rssi);
-            let config = "> Configuration".to_string();
+            let config = "> Configuration";
 
             oled_clear()?;
-            oled_write(0, 0, mode, "6x8".to_string())?;
-            oled_write(0, 9, show_status, "6x8".to_string())?;
-            oled_write(0, 18, show_ssid, "6x8".to_string())?;
-            oled_write(0, 27, show_ip, "6x8".to_string())?;
-            oled_write(0, 36, show_rssi, "6x8".to_string())?;
-            oled_write(0, 54, config, "6x8".to_string())?;
+            oled_write(0, 0, "MODE Client", "6x8")?;
+            oled_write(0, 9, &show_status, "6x8")?;
+            oled_write(0, 18, &show_ssid, "6x8")?;
+            oled_write(0, 27, &show_ip, "6x8")?;
+            oled_write(0, 36, &show_rssi, "6x8")?;
+            oled_write(0, 54, config, "6x8")?;
             oled_flush()?;
 
             Ok(())
@@ -181,27 +176,26 @@ pub fn state_network() -> Result<(), MenuError> {
         // wlan0 is down
         // Network: AP mode
         "down" => {
-            let mode = "MODE Access Point".to_string();
-            let status = match network_state("ap0".to_string()) {
+            let status = match network_state("ap0") {
                 Ok(state) => state,
                 Err(_) => "Error".to_string(),
             };
             let show_status = format!("STATUS {}", status);
-            let ip = match network_ip("ap0".to_string()) {
+            let ip = match network_ip("ap0") {
                 Ok(ip) => ip,
                 Err(_) => "x.x.x.x".to_string(),
             };
             let show_ip = format!("IP {}", ip);
-            let ssid = "peach".to_string();
+            let ssid = "peach";
             let show_ssid = format!("NETWORK {}", ssid);
-            let config = "> Configuration".to_string();
+            let config = "> Configuration";
 
             oled_clear()?;
-            oled_write(0, 0, mode, "6x8".to_string())?;
-            oled_write(0, 9, show_status, "6x8".to_string())?;
-            oled_write(0, 18, show_ssid, "6x8".to_string())?;
-            oled_write(0, 27, show_ip, "6x8".to_string())?;
-            oled_write(0, 54, config, "6x8".to_string())?;
+            oled_write(0, 0, "MODE Access Point", "6x8")?;
+            oled_write(0, 9, &show_status, "6x8")?;
+            oled_write(0, 18, &show_ssid, "6x8")?;
+            oled_write(0, 27, &show_ip, "6x8")?;
+            oled_write(0, 54, config, "6x8")?;
             oled_flush()?;
 
             Ok(())
@@ -217,27 +211,25 @@ pub fn state_network_conf(selected: u8) -> Result<(), MenuError> {
     match selected {
         // NetworkConf: root
         0 => {
-            let client = "> Client Mode".to_string();
-            let ap = "  Access Point Mode".to_string();
             oled_clear()?;
-            oled_write(0, 0, client, "6x8".to_string())?;
-            oled_write(0, 9, ap, "6x8".to_string())?;
+            oled_write(0, 0, "> Client Mode", "6x8")?;
+            oled_write(0, 9, "  Access Point Mode", "6x8")?;
             oled_flush()?;
 
             Ok(())
         }
         // NetworkConf: client
         1 => {
-            oled_write(0, 0, "> ".to_string(), "6x8".to_string())?;
-            oled_write(0, 9, "  ".to_string(), "6x8".to_string())?;
+            oled_write(0, 0, "> ", "6x8")?;
+            oled_write(0, 9, "  ", "6x8")?;
             oled_flush()?;
 
             Ok(())
         }
         // NetworkConf: ap
         2 => {
-            oled_write(0, 0, "  ".to_string(), "6x8".to_string())?;
-            oled_write(0, 9, "> ".to_string(), "6x8".to_string())?;
+            oled_write(0, 0, "  ", "6x8")?;
+            oled_write(0, 9, "> ", "6x8")?;
             oled_flush()?;
 
             Ok(())
@@ -249,8 +241,8 @@ pub fn state_network_conf(selected: u8) -> Result<(), MenuError> {
 
 pub fn state_reboot() -> Result<(), MenuError> {
     oled_clear()?;
-    oled_write(27, 16, "REBOOTING".to_string(), "6x8".to_string())?;
-    oled_write(27, 27, "DEVICE...".to_string(), "6x8".to_string())?;
+    oled_write(27, 16, "REBOOTING", "6x8")?;
+    oled_write(27, 27, "DEVICE...", "6x8")?;
     oled_flush()?;
 
     let three_secs = time::Duration::from_millis(3000);
@@ -270,9 +262,9 @@ pub fn state_reboot() -> Result<(), MenuError> {
 
 pub fn state_shutdown() -> Result<(), MenuError> {
     oled_clear()?;
-    oled_write(27, 16, "SHUTTING".to_string(), "6x8".to_string())?;
-    oled_write(27, 27, "DOWN".to_string(), "6x8".to_string())?;
-    oled_write(27, 38, "DEVICE...".to_string(), "6x8".to_string())?;
+    oled_write(27, 16, "SHUTTING", "6x8")?;
+    oled_write(27, 27, "DOWN", "6x8")?;
+    oled_write(27, 38, "DEVICE...", "6x8")?;
     oled_flush()?;
 
     let three_secs = time::Duration::from_millis(3000);
@@ -298,28 +290,24 @@ pub fn state_stats() -> Result<(), MenuError> {
         cpu.idle.round()
     );
     let mem = mem_stats()?;
-    let mem_stats = format!(
-        "MEM {}MB f {}MB u",
-        (mem.free / 1024).to_string(),
-        (mem.used / 1024).to_string()
-    );
+    let mem_stats = format!("MEM {}MB f {}MB u", mem.free / 1024, mem.used / 1024);
     let load = load_average()?;
     let load_stats = format!("LOAD {} {} {}", load.one, load.five, load.fifteen);
     let uptime = uptime()?;
     let uptime_stats = format!("UPTIME {} mins", uptime);
-    let traffic = network_traffic("wlan0".to_string())?;
-    let rx = (traffic.received / 1024 / 1024).to_string();
+    let traffic = network_traffic("wlan0")?;
+    let rx = traffic.received / 1024 / 1024;
     let rx_stats = format!("DATA RX {}MB", rx);
-    let tx = (traffic.transmitted / 1024 / 1024).to_string();
+    let tx = traffic.transmitted / 1024 / 1024;
     let tx_stats = format!("DATA TX {}MB", tx);
 
     oled_clear()?;
-    oled_write(0, 0, cpu_stats, "6x8".to_string())?;
-    oled_write(0, 9, mem_stats, "6x8".to_string())?;
-    oled_write(0, 18, load_stats, "6x8".to_string())?;
-    oled_write(0, 27, uptime_stats, "6x8".to_string())?;
-    oled_write(0, 36, rx_stats, "6x8".to_string())?;
-    oled_write(0, 45, tx_stats, "6x8".to_string())?;
+    oled_write(0, 0, &cpu_stats, "6x8")?;
+    oled_write(0, 9, &mem_stats, "6x8")?;
+    oled_write(0, 18, &load_stats, "6x8")?;
+    oled_write(0, 27, &uptime_stats, "6x8")?;
+    oled_write(0, 36, &rx_stats, "6x8")?;
+    oled_write(0, 45, &tx_stats, "6x8")?;
     oled_flush()?;
 
     Ok(())

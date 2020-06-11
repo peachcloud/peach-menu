@@ -50,9 +50,9 @@ pub fn network_activate_client() -> std::result::Result<String, MenuError> {
 ///
 /// # Arguments
 ///
-/// * `iface` - A String containing the network interface identifier.
+/// * `iface` - A string slice containing the network interface identifier.
 ///
-pub fn network_ip(iface: String) -> std::result::Result<String, MenuError> {
+pub fn network_ip(iface: &str) -> std::result::Result<String, MenuError> {
     debug!("Creating HTTP transport for network client.");
     let transport = HttpTransport::new().standalone()?;
     let http_addr =
@@ -73,9 +73,9 @@ pub fn network_ip(iface: String) -> std::result::Result<String, MenuError> {
 ///
 /// # Arguments
 ///
-/// * `iface` - A String containing the network interface identifier.
+/// * `iface` - A string slice containing the network interface identifier.
 ///
-pub fn network_rssi(iface: String) -> std::result::Result<String, MenuError> {
+pub fn network_rssi(iface: &str) -> std::result::Result<String, MenuError> {
     debug!("Creating HTTP transport for network client.");
     let transport = HttpTransport::new().standalone()?;
     let http_addr =
@@ -96,9 +96,9 @@ pub fn network_rssi(iface: String) -> std::result::Result<String, MenuError> {
 ///
 /// # Arguments
 ///
-/// * `iface` - A String containing the network interface identifier.
+/// * `iface` - A string slice containing the network interface identifier.
 ///
-pub fn network_ssid(iface: String) -> std::result::Result<String, MenuError> {
+pub fn network_ssid(iface: &str) -> std::result::Result<String, MenuError> {
     debug!("Creating HTTP transport for network client.");
     let transport = HttpTransport::new().standalone()?;
     let http_addr =
@@ -117,7 +117,11 @@ pub fn network_ssid(iface: String) -> std::result::Result<String, MenuError> {
 /// Creates a JSON-RPC client with http transport and calls the `peach-network`
 /// `state` method.
 ///
-pub fn network_state(iface: String) -> std::result::Result<String, MenuError> {
+/// # Arguments
+///
+/// * `iface` - A string slice containing the network interface identifier.
+///
+pub fn network_state(iface: &str) -> std::result::Result<String, MenuError> {
     debug!("Creating HTTP transport for network client.");
     let transport = HttpTransport::new().standalone()?;
     let http_addr =
@@ -136,7 +140,11 @@ pub fn network_state(iface: String) -> std::result::Result<String, MenuError> {
 /// Creates a JSON-RPC client with http transport and calls the `peach-network`
 /// `traffic` method.
 ///
-pub fn network_traffic(iface: String) -> std::result::Result<Traffic, MenuError> {
+/// # Arguments
+///
+/// * `iface` - A string slice containing the network interface identifier.
+///
+pub fn network_traffic(iface: &str) -> std::result::Result<Traffic, MenuError> {
     debug!("Creating HTTP transport for network client.");
     let transport = HttpTransport::new().standalone()?;
     let http_addr =
@@ -161,17 +169,17 @@ jsonrpc_client!(pub struct PeachNetworkClient {
     pub fn activate_client(&mut self) -> RpcRequest<String>;
 
     /// Creates a JSON-RPC request to get the IP address for the given interface.
-    pub fn ip(&mut self, iface: String) -> RpcRequest<String>;
+    pub fn ip(&mut self, iface: &str) -> RpcRequest<String>;
 
     /// Creates a JSON-RPC request to get the average signal strength for the given interface.
-    pub fn rssi(&mut self, iface: String) -> RpcRequest<String>;
+    pub fn rssi(&mut self, iface: &str) -> RpcRequest<String>;
 
     /// Creates a JSON-RPC request to get the SSID of the currently-connected network for the given interface.
-    pub fn ssid(&mut self, iface: String) -> RpcRequest<String>;
+    pub fn ssid(&mut self, iface: &str) -> RpcRequest<String>;
 
     /// Creates a JSON-RPC request to get the state for the given interface.
-    pub fn state(&mut self, iface: String) -> RpcRequest<String>;
+    pub fn state(&mut self, iface: &str) -> RpcRequest<String>;
 
     /// Creates a JSON-RPC request to get the network traffic for the given interface.
-    pub fn traffic(&mut self, iface: String) -> RpcRequest<String>;
+    pub fn traffic(&mut self, iface: &str) -> RpcRequest<String>;
 });

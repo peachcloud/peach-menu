@@ -13,8 +13,8 @@ use crate::error::MenuError;
 ///
 /// * `x_coord` - A 32 byte signed int.
 /// * `y_coord` - A 32 byte signed int.
-/// * `string` - A String containing the message to be displayed.
-/// * `font_size` - A String containing `6x8`, `6x12`, `8x16` or `12x16`
+/// * `string` - A string slice containing the message to be displayed.
+/// * `font_size` - A string slice containing `6x8`, `6x12`, `8x16` or `12x16`
 ///
 pub fn oled_clear() -> std::result::Result<(), MenuError> {
     debug!("Creating HTTP transport for OLED client.");
@@ -89,8 +89,8 @@ pub fn oled_power(power: bool) -> std::result::Result<(), MenuError> {
 pub fn oled_write(
     x_coord: i32,
     y_coord: i32,
-    string: String,
-    font_size: String,
+    string: &str,
+    font_size: &str,
 ) -> std::result::Result<String, MenuError> {
     debug!("Creating HTTP transport for OLED client.");
     let transport = HttpTransport::new().standalone()?;
@@ -101,7 +101,7 @@ pub fn oled_write(
     info!("Creating client for peach_oled service.");
     let mut client = PeachOledClient::new(transport_handle);
 
-    client.write(x_coord, y_coord, string, font_size).call()?;
+    client.write(x_coord, y_coord, &string, &font_size).call()?;
     debug!("Wrote to the OLED display.");
 
     Ok("success".to_string())
@@ -121,5 +121,5 @@ jsonrpc_client!(pub struct PeachOledClient {
     pub fn power(&mut self, power: bool) -> RpcRequest<String>;
 
     /// Creates a JSON-RPC request to write to the OLED display.
-    pub fn write(&mut self, x_coord: i32, y_coord: i32, string: String, font_size: String) -> RpcRequest<String>;
+    pub fn write(&mut self, x_coord: i32, y_coord: i32, string: &str, font_size: &str) -> RpcRequest<String>;
 });
