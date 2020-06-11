@@ -12,13 +12,13 @@ extern crate crossbeam_channel;
 extern crate jsonrpc_client_core;
 extern crate ws;
 
-mod buttons;
+pub mod buttons;
 mod error;
-mod network;
+pub mod network;
 mod oled;
-mod state_machine;
+pub mod state_machine;
 mod states;
-mod stats;
+pub mod stats;
 mod structs;
 
 use std::env;

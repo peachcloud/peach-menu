@@ -65,7 +65,7 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
             oled_write(0, 36, "  Display Off".to_string(), "6x8".to_string())?;
             oled_write(0, 45, "  Reboot".to_string(), "6x8".to_string())?;
             oled_write(0, 54, "  Shutdown".to_string(), "6x8".to_string())?;
-            oled_write(100, 54, "v0.1".to_string(), "6x8".to_string())?;
+            oled_write(100, 54, "v0.2".to_string(), "6x8".to_string())?;
             oled_flush()?;
 
             Ok(())
