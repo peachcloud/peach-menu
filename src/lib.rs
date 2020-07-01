@@ -4,7 +4,7 @@
 //! a menu state machine. I/O takes place using JSON-RPC 2.0 over websockets,
 //! with `peach-buttons` providing GPIO input data and `peach-oled` receiving
 //! output data for display.
-
+//!
 #[macro_use]
 pub extern crate log;
 extern crate crossbeam_channel;
