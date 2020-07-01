@@ -141,9 +141,9 @@ pub fn state_network() -> Result<(), MenuError> {
         Err(_) => "Error".to_string(),
     };
     match status.as_ref() {
-        // wlan0 is up
+        // wlan0 is up or dormant
         // Network: Client mode
-        "up" => {
+        "up" | "dormant" => {
             let show_status = format!("STATUS {}", status);
             let ip = match network_ip("wlan0") {
                 Ok(ip) => ip,
