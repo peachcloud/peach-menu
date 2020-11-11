@@ -81,6 +81,10 @@ Build the package:
 
 The output will be written to `target/debian/peach-menu_0.1.0_arm64.deb` (or similar).
 
+Build the package (aarch64):
+
+`cargo deb --target aarch64-unknown-linux-gnu`
+
 Install the package as follows:
 
 `sudo dpkg -i target/debian/peach-menu_0.1.0_arm64.deb`
