@@ -1,6 +1,6 @@
 [package]
 name = "peach-menu"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Andrew Reid <gnomad@cryptolab.net>"]
 edition = "2018"
 description = "Menu for monitoring and interacting with the PeachCloud device. A state machine which listens for GPIO events (button presses) by subscribing to peach-buttons over websockets and makes JSON-RPC calls to relevant PeachCloud microservices."
