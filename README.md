@@ -1,6 +1,6 @@
 # peach-menu
 
-[![Build Status](https://travis-ci.com/peachcloud/peach-menu.svg?branch=master)](https://travis-ci.com/peachcloud/peach-menu) ![Generic badge](https://img.shields.io/badge/version-0.2.0-<COLOR>.svg)
+[![Build Status](https://travis-ci.com/peachcloud/peach-menu.svg?branch=master)](https://travis-ci.com/peachcloud/peach-menu) ![Generic badge](https://img.shields.io/badge/version-0.2.1-<COLOR>.svg)
 
 OLED menu microservice module for PeachCloud. A state machine which listens for GPIO events (button presses) by subscribing to `peach-buttons` over websockets and makes [JSON-RPC](https://www.jsonrpc.org/specification) calls to relevant PeachCloud microservices (`peach-network`, `peach-oled`, `peach-stats`).
 
@@ -79,7 +79,7 @@ Build the package:
 
 `cargo deb`
 
-The output will be written to `target/debian/peach-menu_0.1.0_arm64.deb` (or similar).
+The output will be written to `target/debian/peach-menu_0.2.1_arm64.deb` (or similar).
 
 Build the package (aarch64):
 
@@ -87,7 +87,7 @@ Build the package (aarch64):
 
 Install the package as follows:
 
-`sudo dpkg -i target/debian/peach-menu_0.1.0_arm64.deb`
+`sudo dpkg -i target/debian/peach-menu_0.2.1_arm64.deb`
 
 The service will be automatically enabled and started.
 

@@ -251,7 +251,7 @@ pub fn state_reboot() -> Result<(), MenuError> {
     oled_power(false)?;
     info!("Rebooting device");
     process::Command::new("sudo")
-        .arg("shutdown")
+        .arg("/sbin/shutdown")
         .arg("-r")
         .arg("now")
         .output()
@@ -273,7 +273,7 @@ pub fn state_shutdown() -> Result<(), MenuError> {
     oled_power(false)?;
     info!("Shutting down device");
     process::Command::new("sudo")
-        .arg("shutdown")
+        .arg("/sbin/shutdown")
         .arg("now")
         .output()
         .expect("Failed to shutdown");
