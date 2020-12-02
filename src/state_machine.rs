@@ -1,9 +1,7 @@
-extern crate crossbeam_channel;
-extern crate ws;
-
 use std::{process, thread};
 
 use crossbeam_channel::*;
+use log::{error, info, warn};
 
 use crate::error::MenuError;
 use crate::oled::*;

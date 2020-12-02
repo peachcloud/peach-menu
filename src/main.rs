@@ -1,9 +1,6 @@
-extern crate peach_menu;
-#[macro_use]
-extern crate log;
-extern crate env_logger;
+use std::process;
 
-use ::std::process;
+use log::error;
 
 fn main() {
     // initialize the logger

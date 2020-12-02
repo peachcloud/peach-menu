@@ -1,6 +1,7 @@
-use chrono::{DateTime, Local};
-
 use std::{process, thread, time};
+
+use chrono::{DateTime, Local};
+use log::info;
 
 use crate::error::MenuError;
 use crate::network::*;

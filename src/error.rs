@@ -1,6 +1,3 @@
-extern crate jsonrpc_client_core;
-extern crate jsonrpc_client_http;
-
 #[derive(Debug)]
 pub enum MenuError {
     OledHttp(jsonrpc_client_http::Error),

@@ -1,8 +1,8 @@
-extern crate jsonrpc_client_http;
-
 use std::env;
 
+use jsonrpc_client_core::*;
 use jsonrpc_client_http::HttpTransport;
+use log::{debug, info};
 
 use crate::error::MenuError;
 use crate::structs::{CpuStatPercentages, LoadAverage, MemStat, Uptime};
