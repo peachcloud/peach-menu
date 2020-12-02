@@ -2,7 +2,7 @@ use std::{process, thread};
 
 use crossbeam_channel::*;
 use log::{error, info, warn};
-use peach_lib::oled_client::*;
+use peach_lib::oled_client;
 
 use crate::error::MenuError;
 use crate::states::*;
@@ -217,11 +217,11 @@ impl State {
             }
             State::OledPower(0) => {
                 info!("State changed to: OledPower 0.");
-                oled_power(false)?;
+                oled_client::power(false)?;
             }
             State::OledPower(1) => {
                 info!("State changed to: OledPower 1.");
-                oled_power(true)?;
+                oled_client::power(true)?;
             }
             State::OledPower(_) => {
                 info!("State changed to: OledPower _.");
