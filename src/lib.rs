@@ -5,13 +5,6 @@
 //! with `peach-buttons` providing GPIO input data and `peach-oled` receiving
 //! output data for display.
 //!
-#[macro_use]
-pub extern crate log;
-extern crate crossbeam_channel;
-#[macro_use]
-extern crate jsonrpc_client_core;
-extern crate ws;
-
 pub mod buttons;
 mod error;
 pub mod network;
@@ -24,7 +17,7 @@ mod structs;
 use std::env;
 
 use crossbeam_channel::unbounded;
-
+use log::{debug, info};
 use ws::connect;
 
 use crate::buttons::*;

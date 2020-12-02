@@ -1,10 +1,8 @@
-extern crate ws;
-
 use std::process;
 
+use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-
 use ws::{CloseCode, Error, Handler, Handshake, Message, Sender};
 
 #[derive(Debug, Deserialize)]
