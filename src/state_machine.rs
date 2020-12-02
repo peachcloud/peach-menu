@@ -2,9 +2,9 @@ use std::{process, thread};
 
 use crossbeam_channel::*;
 use log::{error, info, warn};
+use peach_lib::oled_client::*;
 
 use crate::error::MenuError;
-use crate::oled::*;
 use crate::states::*;
 
 #[derive(Debug, Clone, Copy)]

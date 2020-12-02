@@ -1,17 +1,26 @@
+use peach_lib::error::{NetworkError, OledError, StatsError};
+
 #[derive(Debug)]
 pub enum MenuError {
-    OledHttp(jsonrpc_client_http::Error),
-    OledClient(jsonrpc_client_core::Error),
+    NetworkError,
+    OledError,
+    StatsError,
 }
 
-impl From<jsonrpc_client_http::Error> for MenuError {
-    fn from(err: jsonrpc_client_http::Error) -> MenuError {
-        MenuError::OledHttp(err)
+impl From<NetworkError> for MenuError {
+    fn from(_err: NetworkError) -> MenuError {
+        MenuError::NetworkError
     }
 }
 
-impl From<jsonrpc_client_core::Error> for MenuError {
-    fn from(err: jsonrpc_client_core::Error) -> MenuError {
-        MenuError::OledClient(err)
+impl From<OledError> for MenuError {
+    fn from(_err: OledError) -> MenuError {
+        MenuError::OledError
+    }
+}
+
+impl From<StatsError> for MenuError {
+    fn from(_err: StatsError) -> MenuError {
+        MenuError::StatsError
     }
 }
