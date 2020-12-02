@@ -3,10 +3,11 @@ use std::{process, thread, time};
 use chrono::{DateTime, Local};
 use log::info;
 
+use peach_lib::network_client::*;
+use peach_lib::oled_client::*;
+use peach_lib::stats_client::*;
+
 use crate::error::MenuError;
-use crate::network::*;
-use crate::oled::*;
-use crate::stats::*;
 
 pub fn state_network_mode(mode: u8) -> Result<(), MenuError> {
     match mode {

@@ -7,11 +7,8 @@
 //!
 pub mod buttons;
 mod error;
-pub mod network;
-mod oled;
 pub mod state_machine;
 mod states;
-pub mod stats;
 mod structs;
 
 use std::env;
