@@ -6,7 +6,6 @@
 //! output data for display.
 //!
 pub mod buttons;
-mod error;
 pub mod state_machine;
 mod states;
 mod structs;
