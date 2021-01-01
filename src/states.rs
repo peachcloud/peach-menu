@@ -3,13 +3,12 @@ use std::{process, thread, time};
 use chrono::{DateTime, Local};
 use log::info;
 
+use peach_lib::error::PeachError;
 use peach_lib::network_client;
 use peach_lib::oled_client;
 use peach_lib::stats_client;
 
-use crate::error::MenuError;
-
-pub fn state_network_mode(mode: u8) -> Result<(), MenuError> {
+pub fn state_network_mode(mode: u8) -> Result<(), PeachError> {
     match mode {
         0 => {
             oled_client::clear()?;
@@ -47,7 +46,7 @@ pub fn state_network_mode(mode: u8) -> Result<(), MenuError> {
     }
 }
 
-pub fn state_home(selected: u8) -> Result<(), MenuError> {
+pub fn state_home(selected: u8) -> Result<(), PeachError> {
     // match on `selected`
     match selected {
         // Home: root
@@ -128,7 +127,7 @@ pub fn state_home(selected: u8) -> Result<(), MenuError> {
     }
 }
 
-pub fn state_logo() -> Result<(), MenuError> {
+pub fn state_logo() -> Result<(), PeachError> {
     let bytes = PEACH_LOGO.to_vec();
     oled_client::clear()?;
     oled_client::draw(bytes, 64, 64, 32, 0)?;
@@ -137,7 +136,7 @@ pub fn state_logo() -> Result<(), MenuError> {
     Ok(())
 }
 
-pub fn state_network() -> Result<(), MenuError> {
+pub fn state_network() -> Result<(), PeachError> {
     let status = match network_client::state("wlan0") {
         Ok(state) => state,
         Err(_) => "Error".to_string(),
@@ -208,7 +207,7 @@ pub fn state_network() -> Result<(), MenuError> {
     }
 }
 
-pub fn state_network_conf(selected: u8) -> Result<(), MenuError> {
+pub fn state_network_conf(selected: u8) -> Result<(), PeachError> {
     // match on `selected`
     match selected {
         // NetworkConf: root
@@ -241,7 +240,7 @@ pub fn state_network_conf(selected: u8) -> Result<(), MenuError> {
     }
 }
 
-pub fn state_reboot() -> Result<(), MenuError> {
+pub fn state_reboot() -> Result<(), PeachError> {
     oled_client::clear()?;
     oled_client::write(27, 16, "REBOOTING", "6x8")?;
     oled_client::write(27, 27, "DEVICE...", "6x8")?;
@@ -262,7 +261,7 @@ pub fn state_reboot() -> Result<(), MenuError> {
     Ok(())
 }
 
-pub fn state_shutdown() -> Result<(), MenuError> {
+pub fn state_shutdown() -> Result<(), PeachError> {
     oled_client::clear()?;
     oled_client::write(27, 16, "SHUTTING", "6x8")?;
     oled_client::write(27, 27, "DOWN", "6x8")?;
@@ -283,7 +282,7 @@ pub fn state_shutdown() -> Result<(), MenuError> {
     Ok(())
 }
 
-pub fn state_stats() -> Result<(), MenuError> {
+pub fn state_stats() -> Result<(), PeachError> {
     let cpu = stats_client::cpu_stats_percent()?;
     let cpu_stats = format!(
         "CPU {} us {} sy {} id",
