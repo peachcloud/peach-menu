@@ -5,19 +5,16 @@
 //! with `peach-buttons` providing GPIO input data and `peach-oled` receiving
 //! output data for display.
 //!
-pub mod buttons;
-pub mod state_machine;
+mod buttons;
+mod state_machine;
 mod states;
 mod structs;
 
-use std::env;
-
-use crossbeam_channel::unbounded;
+use anyhow::Result;
 use log::{debug, info};
-use ws::connect;
+use tokio::sync::mpsc;
 
-use crate::buttons::*;
-use crate::state_machine::*;
+use crate::buttons::Button;
 
 /// Configures channels for message passing, launches the state machine
 /// changer thread and connects to the `peach-buttons` JSON-RPC pubsub
@@ -28,20 +25,24 @@ use crate::state_machine::*;
 /// be extracted from the received websocket message and passed to the
 /// state machine.
 ///
-pub fn run() -> std::result::Result<(), Box<dyn std::error::Error>> {
+pub async fn run() -> Result<()> {
     info!("Starting up.");
 
-    debug!("Creating unbounded channel for message passing.");
-    let (s, r) = unbounded();
+    debug!("Creating bounded channel for message passing.");
+    let (sender, receiver) = mpsc::channel(8);
 
-    debug!("Spawning state-machine thread.");
-    state_changer(r);
+    let pin = vec![4, 27, 23, 17, 22, 5, 6];
+    let code = vec![0, 1, 2, 3, 4, 5, 6];
 
-    let ws_addr = env::var("PEACH_BUTTONS_SERVER").unwrap_or_else(|_| "127.0.0.1:5111".to_string());
+    debug!("Setting up GPIO event handlers.");
+    for i in 0..7 {
+        Button::new(pin[i], code[i], sender.clone())
+            .listen()
+            .await?;
+    }
 
-    let ws_server = format!("ws://{}", ws_addr);
-
-    connect(ws_server, |out| Client { out, s: &s })?;
+    debug!("Starting state-machine.");
+    state_machine::state_changer(receiver).await?;
 
     Ok(())
 }

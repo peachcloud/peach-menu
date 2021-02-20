@@ -1,7 +1,6 @@
-use std::{process, thread};
-
-use crossbeam_channel::*;
-use log::{error, info, warn};
+use anyhow::Result;
+use log::{info, warn};
+use tokio::sync::mpsc;
 
 use peach_lib::error::PeachError;
 use peach_lib::oled_client;
@@ -42,37 +41,38 @@ pub enum State {
 ///
 /// * `r` - An unbounded `crossbeam_channel::Receiver` for unsigned 8 byte int.
 ///
-pub fn state_changer(r: Receiver<u8>) {
-    thread::spawn(move || {
-        info!("Initializing the state machine.");
-        let mut state = State::Logo;
+pub async fn state_changer(mut receiver: mpsc::Receiver<u8>) -> Result<()> {
+    info!("Initializing the state machine.");
+    let mut state = State::Logo;
+    match state.run() {
+        Ok(_) => (),
+        Err(e) => warn!("State machine error: {:?}", e),
+    };
+
+    // listen for button press events
+    while let Some(button_code) = receiver.recv().await {
+        let event = match button_code {
+            0 => Event::Center,
+            1 => Event::Left,
+            2 => Event::Right,
+            3 => Event::Up,
+            4 => Event::Down,
+            5 => Event::A,
+            6 => Event::B,
+            _ => Event::Unknown,
+        };
+
+        // advance the state machine
+        state = state.next(event);
+
+        // handle state logic errors
         match state.run() {
             Ok(_) => (),
             Err(e) => warn!("State machine error: {:?}", e),
         };
+    }
 
-        loop {
-            let button_code = r.recv().unwrap_or_else(|err| {
-                error!("Problem receiving button code from server: {}", err);
-                process::exit(1);
-            });
-            let event = match button_code {
-                0 => Event::Center,
-                1 => Event::Left,
-                2 => Event::Right,
-                3 => Event::Up,
-                4 => Event::Down,
-                5 => Event::A,
-                6 => Event::B,
-                _ => Event::Unknown,
-            };
-            state = state.next(event);
-            match state.run() {
-                Ok(_) => (),
-                Err(e) => warn!("State machine error: {:?}", e),
-            };
-        }
-    });
+    Ok(())
 }
 
 // 0 - Home
