@@ -18,26 +18,35 @@ impl Button {
             sender,
         }
     }
+}
 
-    pub async fn listen(&mut self) -> Result<()> {
-        let mut chip = Chip::new("/dev/gpiochip0")?;
+pub struct ButtonHandle;
 
-        let input = chip.get_line(self.pin)?;
-
-        let mut events = AsyncLineEventHandle::new(input.events(
-            LineRequestFlags::INPUT,
-            EventRequestFlags::BOTH_EDGES,
-            "gpioevents",
-        )?)?;
-
-        while let Some(event) = events.next().await {
-            debug!("{:?}", event?);
-            self.sender
-                .send(self.button_code)
-                .await
-                .context("State machine receiver has closed")?;
-        }
-
-        Ok(())
+impl ButtonHandle {
+    pub fn spawn(button: Button) {
+        tokio::spawn(listen(button));
     }
+}
+
+pub async fn listen(mut button: Button) -> Result<()> {
+    let mut chip = Chip::new("/dev/gpiochip0")?;
+
+    let input = chip.get_line(button.pin)?;
+
+    let mut events = AsyncLineEventHandle::new(input.events(
+        LineRequestFlags::INPUT,
+        EventRequestFlags::RISING_EDGE,
+        "gpioevents",
+    )?)?;
+
+    while let Some(event) = events.next().await {
+        debug!("{:?}", event?);
+        button
+            .sender
+            .send(button.button_code)
+            .await
+            .context("State machine receiver has closed")?;
+    }
+
+    Ok(())
 }

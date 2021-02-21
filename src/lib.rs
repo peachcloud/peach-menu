@@ -14,7 +14,7 @@ use anyhow::Result;
 use log::{debug, info};
 use tokio::sync::mpsc;
 
-use crate::buttons::Button;
+use crate::buttons::{Button, ButtonHandle};
 
 /// Configures channels for message passing, launches the state machine
 /// changer thread and connects to the `peach-buttons` JSON-RPC pubsub
@@ -36,9 +36,8 @@ pub async fn run() -> Result<()> {
 
     debug!("Setting up GPIO event handlers.");
     for i in 0..7 {
-        Button::new(pin[i], code[i], sender.clone())
-            .listen()
-            .await?;
+        let button = Button::new(pin[i], code[i], sender.clone());
+        ButtonHandle::spawn(button);
     }
 
     debug!("Starting state-machine.");
