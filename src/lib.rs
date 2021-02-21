@@ -8,7 +8,6 @@
 mod buttons;
 mod state_machine;
 mod states;
-mod structs;
 
 use anyhow::Result;
 use log::{debug, info};
