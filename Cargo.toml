@@ -1,9 +1,9 @@
 [package]
 name = "peach-menu"
-version = "0.2.7"
+version = "0.3.0"
 authors = ["Andrew Reid <gnomad@cryptolab.net>"]
 edition = "2018"
-description = "Menu for monitoring and interacting with the PeachCloud device. A state machine which listens for GPIO events (button presses) by subscribing to peach-buttons over websockets and makes JSON-RPC calls to relevant PeachCloud microservices."
+description = "Menu for monitoring and interacting with the PeachCloud device. A state machine which listens for GPIO events (button presses) and makes JSON-RPC calls to relevant PeachCloud microservices."
 homepage = "https://opencollective.com/peachcloud"
 repository = "https://github.com/peachcloud/peach-menu"
 readme = "README.md"
@@ -14,9 +14,8 @@ publish = false
 depends = "$auto"
 extended-description = """\
 Menu for monitoring and interacting with the PeachCloud device. \
-A state machine which listens for GPIO events (button presses) by \
-subscribing to peach-buttons over websockets and makes JSON-RPC calls \
-to relevant PeachCloud microservices."""
+A state machine which listens for GPIO events (button presses) \
+and makes JSON-RPC calls to relevant PeachCloud microservices."""
 maintainer-scripts="debian"
 systemd-units = { unit-name = "peach-menu" }
 assets = [
