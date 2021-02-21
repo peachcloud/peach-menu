@@ -39,8 +39,7 @@ pub enum State {
 ///
 /// # Arguments
 ///
-/// * `r` - An unbounded `crossbeam_channel::Receiver` for unsigned 8 byte int.
-///
+/// * `r` - A bounded `tokio::sync::mpsc::Receiver` for unsigned 8 byte int.
 pub async fn state_changer(mut receiver: mpsc::Receiver<u8>) -> Result<()> {
     info!("Initializing the state machine.");
     let mut state = State::Logo;
