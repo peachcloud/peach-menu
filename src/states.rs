@@ -62,7 +62,7 @@ pub fn state_home(selected: u8) -> Result<(), PeachError> {
             oled_client::write(0, 36, "  Display Off", "6x8")?;
             oled_client::write(0, 45, "  Reboot", "6x8")?;
             oled_client::write(0, 54, "  Shutdown", "6x8")?;
-            oled_client::write(100, 54, "v0.2", "6x8")?;
+            oled_client::write(100, 54, "v0.3", "6x8")?;
             oled_client::flush()?;
 
             Ok(())
